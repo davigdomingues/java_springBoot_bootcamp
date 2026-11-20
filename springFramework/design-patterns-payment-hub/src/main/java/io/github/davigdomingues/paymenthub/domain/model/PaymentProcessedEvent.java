@@ -11,6 +11,11 @@ import java.util.Objects;
 /**
  * Evento de domínio imutável emitido pelo Publisher do padrão Observer
  * após processamento, rejeição ou estorno de uma transação.
+ *
+ * <p><strong>Estrutura e impacto:</strong> desacopla o núcleo transacional do Facade dos
+ * efeitos colaterais de auditoria ({@code AuditLogObserver}), notificações multicanal
+ * ({@code NotificationDispatchObserver}) e telemetria de negócio ({@code MetricsCollectorObserver}).
+ * A imutabilidade impede que um observador corrompa o payload recebido pelos demais.</p>
  */
 public record PaymentProcessedEvent(
         String transactionCode,
@@ -26,6 +31,12 @@ public record PaymentProcessedEvent(
         Instant occurredAt,
         String details
 ) {
+    /**
+     * Valida os atributos estruturais mínimos exigidos pelos observadores inscritos.
+     *
+     * @throws NullPointerException quando {@code transactionCode}, {@code eventType},
+     *                              {@code paymentMethod}, {@code status} ou {@code riskLevel} forem nulos
+     */
     public PaymentProcessedEvent {
         Objects.requireNonNull(transactionCode, "transactionCode must not be null");
         Objects.requireNonNull(eventType, "eventType must not be null");

@@ -10,6 +10,10 @@ import java.util.Objects;
 /**
  * Contexto imutável de entrada compartilhado entre os padrões Strategy,
  * Chain of Responsibility, Decorator e Adapter durante o processamento de um pagamento.
+ *
+ * <p><strong>Ponto de maior impacto:</strong> garante integridade financeira e higiene de
+ * domínio logo na fronteira de criação (fail-fast), impedindo propagação de valores nulos,
+ * negativos ou escalas decimais inconsistentes através do pipeline.</p>
  */
 public record PaymentContext(
         String transactionCode,
@@ -25,7 +29,14 @@ public record PaymentContext(
 ) {
     /**
      * Construtor compacto responsável por validar campos obrigatórios e normalizar
-     * valores financeiros e defaults de domínio.
+     * valores financeiros (escala fixa de 2 casas com arredondamento bancário {@code HALF_EVEN})
+     * e defaults seguros de domínio.
+     *
+     * @throws NullPointerException     quando campos obrigatórios ({@code transactionCode},
+     *                                  {@code payerDocument}, {@code payeeDocument}, {@code amount},
+     *                                  {@code paymentMethod}) forem nulos
+     * @throws IllegalArgumentException quando strings obrigatórias estiverem em branco ou
+     *                                  {@code amount} for menor ou igual a zero
      */
     public PaymentContext {
         transactionCode = requireNonBlank(transactionCode, "transactionCode");
@@ -35,6 +46,7 @@ public record PaymentContext(
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("amount must be greater than zero");
         }
+        // Normalização monetária bancária única para evitar drift entre Strategy, Adapter e persistência
         amount = amount.setScale(2, RoundingMode.HALF_EVEN);
         Objects.requireNonNull(paymentMethod, "paymentMethod must not be null");
         customerTier = customerTier != null ? customerTier : CustomerTier.STANDARD;

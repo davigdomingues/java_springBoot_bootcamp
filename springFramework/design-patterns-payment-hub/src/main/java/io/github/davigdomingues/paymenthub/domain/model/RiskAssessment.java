@@ -9,6 +9,11 @@ import java.util.Objects;
 /**
  * Resultado imutável da avaliação de risco e compliance produzida pela
  * Chain of Responsibility.
+ *
+ * <p><strong>Estrutura e impacto:</strong> transporta estado acumulado puro entre os elos da
+ * cadeia sem efeito colateral. O campo {@code approved} governa o curto-circuito do
+ * {@code ComplianceValidationHandler} e a decisão do {@code PaymentOrchestrationFacade}
+ * entre liquidar ou persistir como {@code REJECTED} e lançar {@code ComplianceViolationException}.</p>
  */
 public record RiskAssessment(
         int riskScore,
@@ -16,8 +21,14 @@ public record RiskAssessment(
         boolean approved,
         List<String> flags
 ) {
+    /**
+     * Valida a classificação de risco e realiza cópia defensiva imutável das flags.
+     *
+     * @throws NullPointerException quando {@code riskLevel} for nulo
+     */
     public RiskAssessment {
         Objects.requireNonNull(riskLevel, "riskLevel must not be null");
+        // Cópia defensiva impede alteração externa do histórico de flags após avaliação
         flags = flags == null ? List.of() : List.copyOf(flags);
     }
 
@@ -43,7 +54,8 @@ public record RiskAssessment(
 
     /**
      * Retorna uma nova avaliação acumulando pontos de risco e uma flag informativa,
-     * recalculando automaticamente a classificação de risco.
+     * recalculando automaticamente a classificação de risco (limiares: &ge; 30 MEDIUM,
+     * &ge; 60 HIGH, teto 100). Se a avaliação já estiver bloqueada, preserva o bloqueio.
      *
      * @param points pontos positivos a adicionar ao score
      * @param flag   identificador da ocorrência detectada

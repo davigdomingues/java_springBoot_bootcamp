@@ -26,7 +26,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Entidade JPA que representa uma transação persistida no Payment Hub.
+ * Entidade JPA central que representa uma transação persistida no Payment Hub.
+ *
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> agrega o estado financeiro,
+ * a classificação de risco e a rastreabilidade dos padrões executados em uma única tabela
+ * ({@code payment_transactions}). As restrições {@code unique} em {@code transaction_code}
+ * e {@code idempotency_key} atuam como última linha de defesa contra duplicidade de
+ * cobrança no banco, enquanto {@code precision = 19, scale = 2} previne perda de precisão
+ * monetária. Fora os timestamps gerenciados por callbacks JPA, a única mutação permitida
+ * após a criação ocorre via {@link #markAsRefunded(String)}.</p>
  */
 @Entity
 @Table(name = "payment_transactions")
@@ -38,9 +46,11 @@ public class PaymentTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Índice único garante rastreabilidade 1:1 com o código emitido pelo Singleton
     @Column(name = "transaction_code", nullable = false, unique = true, length = 40)
     private String transactionCode;
 
+    // Chave opcional única no banco para impedir processamento duplicado em retentativas de rede
     @Column(name = "idempotency_key", unique = true, length = 100)
     private String idempotencyKey;
 
@@ -159,6 +169,7 @@ public class PaymentTransaction {
      * @param context contexto da requisição de pagamento
      * @param result  resultado consolidado pelo pipeline decorado
      * @return entidade pronta para persistência
+     * @throws NullPointerException quando {@code context} ou {@code result} forem nulos
      */
     public static PaymentTransaction fromExecutionResult(PaymentContext context, PaymentExecutionResult result) {
         Objects.requireNonNull(context, "context must not be null");
@@ -181,9 +192,13 @@ public class PaymentTransaction {
     /**
      * Constrói uma entidade marcada como rejeitada durante a avaliação de compliance.
      *
+     * <p>Mantém valores financeiros zerados e {@code clearingChannel = "COMPLIANCE_GATE"},
+     * permitindo rastreamento de tentativas bloqueadas sem acionar o adaptador legado.</p>
+     *
      * @param context        contexto da requisição de pagamento
      * @param riskAssessment avaliação bloqueante emitida pela Chain of Responsibility
      * @return entidade com status {@link PaymentStatus#REJECTED}
+     * @throws NullPointerException quando {@code context} ou {@code riskAssessment} forem nulos
      */
     public static PaymentTransaction rejected(PaymentContext context, RiskAssessment riskAssessment) {
         Objects.requireNonNull(context, "context must not be null");
@@ -205,7 +220,8 @@ public class PaymentTransaction {
     }
 
     /**
-     * Atualiza a transação para o estado estornado após confirmação no canal de liquidação.
+     * Única transição de estado pós-persistência permitida na entidade: move a transação
+     * para {@link PaymentStatus#REFUNDED} após confirmação de estorno no canal legado.
      *
      * @param reversalAuthCode código de autorização do estorno retornado pelo adaptador
      */
@@ -235,6 +251,7 @@ public class PaymentTransaction {
         return deserializeList(appliedDecorators);
     }
 
+    // Callbacks JPA garantem carimbos temporais consistentes mesmo quando persistida fora do Facade
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();
@@ -249,6 +266,7 @@ public class PaymentTransaction {
         this.updatedAt = Instant.now();
     }
 
+    // Serialização inline delimitada por vírgula evita tabelas auxiliares mantendo consulta simples no H2
     private static String serializeList(List<String> items) {
         if (items == null || items.isEmpty()) {
             return "";

@@ -11,8 +11,12 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Registro de notificações disparadas pelo {@code NotificationDispatchObserver}
- * para canais como {@code EMAIL}, {@code PUSH} e {@code FRAUD_ALERT_WEBHOOK}.
+ * Registro persistente de notificações multicanal disparadas pelo {@code NotificationDispatchObserver}.
+ *
+ * <p><strong>Estrutura e impacto:</strong> armazena evidências de envio nos canais
+ * {@code EMAIL}, {@code PUSH} e {@code FRAUD_ALERT_WEBHOOK} na tabela {@code notification_logs}.
+ * Assim como a auditoria, alertas antifraude em bloqueios de compliance dependem do
+ * {@code noRollbackFor = ComplianceViolationException.class} para permanecerem gravados.</p>
  */
 @Entity
 @Table(name = "notification_logs")
@@ -37,12 +41,19 @@ public class NotificationLog {
     @Column(name = "message", nullable = false, length = 500)
     private String message;
 
+    // Timestamp imutável indicando o instante exato de emissão do evento
     @Column(name = "dispatched_at", nullable = false, updatable = false)
     private Instant dispatchedAt;
 
     protected NotificationLog() {
     }
 
+    /**
+     * Cria um registro de notificação validando metadados mínimos de despacho.
+     *
+     * @throws NullPointerException quando {@code transactionCode}, {@code channel},
+     *                              {@code recipient} ou {@code subject} forem nulos
+     */
     public NotificationLog(
             String transactionCode,
             String channel,

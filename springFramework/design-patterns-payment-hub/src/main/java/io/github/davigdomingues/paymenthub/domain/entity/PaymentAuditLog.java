@@ -15,7 +15,13 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Registro imutável de auditoria persistido pelo {@code AuditLogObserver}.
+ * Registro append-only de auditoria persistido pelo {@code AuditLogObserver}.
+ *
+ * <p><strong>Estrutura e impacto:</strong> consolida uma trilha cronológica imutável de
+ * cada transição relevante ({@code PAYMENT_PROCESSED}, {@code PAYMENT_REJECTED},
+ * {@code PAYMENT_REFUNDED}) vinculada por {@code transactionCode}. Como a tabela
+ * {@code payment_audit_logs} registra inclusive transações rejeitadas, sua persistência
+ * depende da política {@code noRollbackFor = ComplianceViolationException.class} no Facade.</p>
  */
 @Entity
 @Table(name = "payment_audit_logs")
@@ -42,12 +48,19 @@ public class PaymentAuditLog {
     @Column(name = "details", nullable = false, length = 500)
     private String details;
 
+    // Coluna bloqueada contra atualização posterior para preservar integridade de auditoria
     @Column(name = "recorded_at", nullable = false, updatable = false)
     private Instant recordedAt;
 
     protected PaymentAuditLog() {
     }
 
+    /**
+     * Cria um registro de auditoria validando os campos obrigatórios de rastreabilidade.
+     *
+     * @throws NullPointerException quando {@code transactionCode}, {@code eventType},
+     *                              {@code status} ou {@code riskLevel} forem nulos
+     */
     public PaymentAuditLog(
             String transactionCode,
             String eventType,
