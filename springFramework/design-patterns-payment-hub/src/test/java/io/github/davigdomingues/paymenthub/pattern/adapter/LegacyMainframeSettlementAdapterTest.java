@@ -18,9 +18,9 @@ import static org.mockito.Mockito.when;
 /**
  * Testes unitários do Adapter {@link LegacyMainframeSettlementAdapter}.
  *
- * <p>Valida serialização decimal → centavos, sanitização de delimitadores {@code |} contra
- * corrupção posicional do frame, comandos {@code SETTLE}/{@code REFUND} e tradução de
- * respostas {@code ERR|...} para {@link BusinessRuleException}.</p>
+ * Valida serialização decimal -> centavos, sanitização de delimitadores {@code |} contra corrupção
+ * posicional do frame, comandos {@code SETTLE}/{@code REFUND} e tradução de respostas
+ * {@code ERR|...} para {@link BusinessRuleException}.
  */
 @ExtendWith(MockitoExtension.class)
 class LegacyMainframeSettlementAdapterTest {

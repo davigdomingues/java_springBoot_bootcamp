@@ -25,14 +25,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Testes de integração ponta a ponta do {@link PaymentController} e {@link MetricsController}
- * com contexto Spring completo, banco H2 em memória e {@link MockMvc}.
+ * Testes de integração ponta a ponta do {@link PaymentController} e {@link MetricsController} com
+ * contexto Spring completo, banco H2 em memória e {@link MockMvc}.
  *
- * <p><strong>Cobertura crítica:</strong> valida os 9 padrões GoF atuando em conjunto nas rotas
- * REST (PIX VIP, Cartão parcelado, Boleto {@code PENDING_SETTLEMENT}, idempotência, simulação
- * sem persistência, estorno com trilha atualizada, persistência após HTTP {@code 422} por
+ * Cobertura crítica: valida os 9 padrões GoF atuando em conjunto nas rotas REST (PIX VIP, Cartão
+ * parcelado, Boleto {@code PENDING_SETTLEMENT}, idempotência, simulação sem persistência, estorno
+ * com trilha atualizada, persistência após HTTP {@code 422} por
  * {@code noRollbackFor = ComplianceViolationException.class}, padronização de erros
- * {@code 400}/{@code 404} e exposição de {@code /v3/api-docs}).</p>
+ * {@code 400}/{@code 404} e exposição de {@code /v3/api-docs}).
  */
 @SpringBootTest
 @AutoConfigureMockMvc

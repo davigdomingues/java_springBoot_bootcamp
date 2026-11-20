@@ -15,9 +15,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Testes unitários da Factory {@link PaymentStrategyFactory}.
  *
- * <p>Valida resolução O(1) via {@code EnumMap}, proteção contra método nulo ou ausente
+ * Valida resolução O(1) via {@code EnumMap}, proteção contra método nulo ou ausente
  * ({@link UnsupportedPaymentMethodException}) e detecção fail-fast de registro duplicado
- * ({@link IllegalStateException}) na inicialização do contexto.</p>
+ * ({@link IllegalStateException}) na inicialização do contexto.
  */
 class PaymentStrategyFactoryTest {
 

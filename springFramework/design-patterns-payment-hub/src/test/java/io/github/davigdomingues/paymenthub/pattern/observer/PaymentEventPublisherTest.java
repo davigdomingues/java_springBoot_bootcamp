@@ -16,9 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Testes unitários do {@link PaymentEventPublisher}.
  *
- * <p>Verifica inscrição/remoção dinâmica, proteção contra assinatura duplicada via
- * {@code CopyOnWriteArrayList.addIfAbsent} e <strong>isolamento de falhas</strong> quando
- * um observador lança exceção em runtime, garantindo entrega contínua aos demais assinantes.</p>
+ * Verifica inscrição/remoção dinâmica, proteção contra assinatura duplicada via
+ * {@code CopyOnWriteArrayList.addIfAbsent} e isolamento de falhas quando um observador lança
+ * exceção em runtime, garantindo entrega contínua aos demais assinantes.
  */
 class PaymentEventPublisherTest {
 

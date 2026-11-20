@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Testes unitários do Singleton {@link TransactionCodeGenerator}.
  *
- * <p>Valida unicidade da instância {@code enum INSTANCE}, ordenação monotônica em UTC
- * e ausência de colisões sob concorrência real com múltiplas threads sincronizadas.</p>
+ * Valida unicidade da instância {@code enum INSTANCE}, ordenação monotônica em UTC e ausência de
+ * colisões sob concorrência real com múltiplas threads sincronizadas.
  */
 class TransactionCodeGeneratorTest {
 

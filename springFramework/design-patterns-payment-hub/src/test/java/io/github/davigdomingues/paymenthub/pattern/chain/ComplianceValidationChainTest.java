@@ -23,9 +23,9 @@ import static org.mockito.Mockito.when;
 /**
  * Testes unitários da cadeia {@link ComplianceValidationHandler}.
  *
- * <p>Verifica aprovação limpa, <strong>curto-circuito</strong> sem acesso ao repositório em
- * bloqueios determinísticos ({@code verifyNoInteractions}), acúmulo cumulativo de score/flags
- * entre elos (Valor + Velocidade) e bloqueio por teto de modalidade ou rajada.</p>
+ * Verifica aprovação limpa, curto-circuito sem acesso ao repositório em bloqueios determinísticos
+ * ({@code verifyNoInteractions}), acúmulo cumulativo de score/flags entre elos (Valor + Velocidade)
+ * e bloqueio por teto de modalidade ou rajada.
  */
 @ExtendWith(MockitoExtension.class)
 class ComplianceValidationChainTest {

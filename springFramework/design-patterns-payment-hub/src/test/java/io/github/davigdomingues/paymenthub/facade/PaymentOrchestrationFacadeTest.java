@@ -47,11 +47,11 @@ import static org.mockito.Mockito.when;
 /**
  * Testes unitários da orquestração no {@link PaymentOrchestrationFacade}.
  *
- * <p>Foca nos fluxos críticos de alto impacto: (1) curto-circuito de idempotência com
- * {@code verifyNoInteractions} antes de compliance/liquidação/eventos; (2) bloqueio de
- * compliance persistindo transação {@code REJECTED} + evento {@code PAYMENT_REJECTED} antes
- * de lançar {@link ComplianceViolationException}; e (3) estorno único impedindo duplo
- * reembolso via {@link BusinessRuleException}.</p>
+ * Foca nos fluxos críticos de alto impacto: (1) curto-circuito de idempotência com
+ * {@code verifyNoInteractions} antes de compliance/liquidação/eventos; (2) bloqueio de compliance
+ * persistindo transação {@code REJECTED} + evento {@code PAYMENT_REJECTED} antes de lançar
+ * {@link ComplianceViolationException}; e (3) estorno único impedindo duplo reembolso via
+ * {@link BusinessRuleException}.
  */
 @ExtendWith(MockitoExtension.class)
 class PaymentOrchestrationFacadeTest {

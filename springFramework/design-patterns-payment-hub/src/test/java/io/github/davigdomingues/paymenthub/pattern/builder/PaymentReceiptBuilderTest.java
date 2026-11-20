@@ -14,9 +14,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Testes unitários do Builder {@link PaymentReceiptBuilder}.
  *
- * <p>Verifica normalização de escala monetária, derivação automática de {@code netAmount},
- * imutabilidade de listas defensivas, preservação do objeto original em {@code from(...)}
- * e falha explícita ({@link NullPointerException}) para campos obrigatórios ausentes.</p>
+ * Verifica normalização de escala monetária, derivação automática de {@code netAmount},
+ * imutabilidade de listas defensivas, preservação do objeto original em {@code from(...)} e falha
+ * explícita ({@link NullPointerException}) para campos obrigatórios ausentes.
  */
 class PaymentReceiptBuilderTest {
 
