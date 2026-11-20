@@ -8,10 +8,10 @@ import java.util.List;
 /**
  * Propriedades externalizadas e imutáveis das regras de compliance e controle de velocidade.
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> utiliza {@code @ConfigurationProperties}
- * em um {@code record} Java no lugar de {@code @Value} para garantir binding seguro de listas
- * YAML ({@code sanctioned-documents}) e validação defensiva centralizada no compact constructor,
- * fornecendo fallbacks operacionais caso alguma chave seja omitida no {@code application.yml}.</p>
+ * Estrutura e ponto de maior impacto: utiliza {@code @ConfigurationProperties} em um {@code record}
+ * Java no lugar de {@code @Value} para garantir binding seguro de listas YAML
+ * ({@code sanctioned-documents}) e validação defensiva centralizada no compact constructor,
+ * fornecendo fallbacks operacionais caso alguma chave seja omitida no {@code application.yml}.
  */
 @ConfigurationProperties(prefix = "payment-hub.compliance")
 public record ComplianceProperties(
@@ -24,7 +24,8 @@ public record ComplianceProperties(
         Integer velocityBlockThreshold
 ) {
     /**
-     * Normaliza limites e garante invariante {@code velocityBlockThreshold >= velocityAlertThreshold}.
+     * Normaliza limites e garante invariante
+     * {@code velocityBlockThreshold >= velocityAlertThreshold}.
      */
     public ComplianceProperties {
         sanctionedDocuments = (sanctionedDocuments == null || sanctionedDocuments.isEmpty())

@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Configuração da especificação OpenAPI 3 / Swagger UI do Payment Hub.
  *
- * <p><strong>Estrutura e impacto:</strong> define os metadados institucionais e a visão
- * arquitetural dos 9 padrões GoF exibidos em {@code /swagger-ui.html} e {@code /v3/api-docs},
- * sem interferir nos ciclos transacionais ou de validação da API.</p>
+ * Estrutura e impacto: define os metadados institucionais e a visão arquitetural dos 9 padrões GoF
+ * exibidos em {@code /swagger-ui.html} e {@code /v3/api-docs}, sem interferir nos ciclos
+ * transacionais ou de validação da API.
  */
 @Configuration
 public class OpenApiConfig {

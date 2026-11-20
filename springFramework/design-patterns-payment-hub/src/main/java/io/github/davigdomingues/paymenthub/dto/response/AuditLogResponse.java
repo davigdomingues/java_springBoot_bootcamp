@@ -9,9 +9,9 @@ import java.time.Instant;
 /**
  * DTO imutável de saída para eventos da trilha cronológica de auditoria de uma transação.
  *
- * <p><strong>Estrutura e impacto:</strong> projeta a entidade {@link PaymentAuditLog} para
- * a borda REST desacoplando o modelo relacional JPA da serialização JSON do endpoint
- * {@code GET /api/v1/payments/{transactionCode}/audit}.</p>
+ * Estrutura e impacto: projeta a entidade {@link PaymentAuditLog} para a borda REST desacoplando o
+ * modelo relacional JPA da serialização JSON do endpoint
+ * {@code GET /api/v1/payments/{transactionCode}/audit}.
  */
 public record AuditLogResponse(
         Long id,

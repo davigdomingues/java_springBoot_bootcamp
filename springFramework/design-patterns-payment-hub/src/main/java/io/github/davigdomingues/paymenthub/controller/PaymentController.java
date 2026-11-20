@@ -30,14 +30,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Controlador REST fino para processamento, simulação, consulta, estorno,
- * auditoria e notificações de pagamentos.
+ * Controlador REST fino para processamento, simulação, consulta, estorno, auditoria e notificações
+ * de pagamentos.
  *
- * <p><strong>Estrutura e impacto:</strong> atua exclusivamente como adaptador HTTP na
- * fronteira da aplicação, aplicando Bean Validation ({@code @Valid}) nos payloads de entrada
- * e delegando toda regra de negócio ao {@link PaymentOrchestrationFacade}. Erros sintáticos
- * são convertidos em HTTP {@code 400}, ausência de recursos em {@code 404} e violações de
- * negócio/compliance em {@code 422} pelo {@code GlobalExceptionHandler}.</p>
+ * Estrutura e impacto: atua exclusivamente como adaptador HTTP na fronteira da aplicação, aplicando
+ * Bean Validation ({@code @Valid}) nos payloads de entrada e delegando toda regra de negócio ao
+ * {@link PaymentOrchestrationFacade}. Erros sintáticos são convertidos em HTTP {@code 400},
+ * ausência de recursos em {@code 404} e violações de negócio/compliance em {@code 422} pelo
+ * {@code GlobalExceptionHandler}.
  */
 @RestController
 @RequestMapping("/api/v1/payments")

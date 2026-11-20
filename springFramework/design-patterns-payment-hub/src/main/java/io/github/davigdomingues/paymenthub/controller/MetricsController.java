@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Objects;
 
 /**
- * Controlador REST somente leitura para exposição das métricas consolidadas pelo {@link MetricsCollectorObserver}.
+ * Controlador REST somente leitura para exposição das métricas consolidadas pelo
+ * {@link MetricsCollectorObserver}.
  *
- * <p><strong>Estrutura e impacto:</strong> lê o snapshot thread-safe mantido em memória
- * pelo observador de métricas sem executar agregações pesadas diretamente no banco H2.</p>
+ * Estrutura e impacto: lê o snapshot thread-safe mantido em memória pelo observador de métricas sem
+ * executar agregações pesadas diretamente no banco H2.
  */
 @RestController
 @RequestMapping("/api/v1/metrics")

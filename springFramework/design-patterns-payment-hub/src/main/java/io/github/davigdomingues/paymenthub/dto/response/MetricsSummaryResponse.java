@@ -9,10 +9,10 @@ import java.util.Map;
 /**
  * Snapshot imutável de métricas operacionais mantido pelo {@code MetricsCollectorObserver}.
  *
- * <p><strong>Estrutura e impacto:</strong> espelha contadores de desfecho, volumes financeiros
- * agregados ({@code APPROVED} e {@code PENDING_SETTLEMENT}) e mapas de distribuição por método
- * e status expostos em {@code GET /api/v1/metrics/summary}, mantendo isolamento contra mutação
- * concorrente dos acumuladores em memória.</p>
+ * Estrutura e impacto: espelha contadores de desfecho, volumes financeiros agregados
+ * ({@code APPROVED} e {@code PENDING_SETTLEMENT}) e mapas de distribuição por método e status
+ * expostos em {@code GET /api/v1/metrics/summary}, mantendo isolamento contra mutação concorrente
+ * dos acumuladores em memória.
  */
 public record MetricsSummaryResponse(
         long totalTransactions,

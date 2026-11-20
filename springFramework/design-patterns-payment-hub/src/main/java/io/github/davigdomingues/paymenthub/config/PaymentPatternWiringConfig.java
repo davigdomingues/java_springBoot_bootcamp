@@ -18,20 +18,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Configuração central responsável pelo wiring explícito da
- * <strong>Chain of Responsibility</strong> (compliance) e da pilha de
- * <strong>Decorators</strong> do pipeline de execução.
+ * Configuração central responsável pelo wiring explícito da Chain of Responsibility (compliance) e
+ * da pilha de Decorators do pipeline de execução.
  *
- * <p><strong>Pontos de maior impacto arquitetural:</strong></p>
- * <ul>
- *     <li><strong>Ordem da Chain:</strong> encadeia validadores em memória O(1) primeiro
- *         ({@code Sanction} → {@code AmountLimit}) e consulta em banco por último
- *         ({@code VelocityRisk}), maximizando o ganho do curto-circuito.</li>
- *     <li><strong>Desambiguação por {@code @Primary}:</strong> como {@link CorePaymentExecutionPipeline}
- *         também é um bean {@code @Component} do tipo {@link PaymentExecutionPipeline}, a anotação
- *         {@code @Primary} garante que o {@code PaymentOrchestrationFacade} receba sempre a
- *         pilha decorada completa ({@code Telemetry → Cashback → Core}) sem exigir {@code @Qualifier}.</li>
- * </ul>
+ * Pontos de maior impacto arquitetural:
+ * - Ordem da Chain: encadeia validadores em memória O(1) primeiro ({@code Sanction} ->
+ *   {@code AmountLimit}) e consulta em banco por último ({@code VelocityRisk}), maximizando o ganho
+ *   do curto-circuito.
+ * - Desambiguação por {@code @Primary}: como {@link CorePaymentExecutionPipeline} também é um bean
+ *   {@code @Component} do tipo {@link PaymentExecutionPipeline}, a anotação {@code @Primary}
+ *   garante que o {@code PaymentOrchestrationFacade} receba sempre a pilha decorada completa
+ *   ({@code Telemetry -> Cashback -> Core}) sem exigir {@code @Qualifier}.
  */
 @Configuration
 @EnableConfigurationProperties(ComplianceProperties.class)

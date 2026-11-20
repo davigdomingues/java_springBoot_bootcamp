@@ -13,10 +13,10 @@ import java.util.List;
 /**
  * Representação imutável de saída para processamento, consulta e estorno de transações.
  *
- * <p><strong>Estrutura e impacto:</strong> consolida valores financeiros, avaliação de risco,
- * canal legado, janela de liquidação e decorators aplicados em um contrato JSON estável,
- * evitando serialização direta da entidade JPA {@link PaymentTransaction} (especialmente com
- * {@code spring.jpa.open-in-view=false}).</p>
+ * Estrutura e impacto: consolida valores financeiros, avaliação de risco, canal legado, janela de
+ * liquidação e decorators aplicados em um contrato JSON estável, evitando serialização direta da
+ * entidade JPA {@link PaymentTransaction} (especialmente com
+ * {@code spring.jpa.open-in-view=false}).
  */
 public record PaymentResponse(
         String transactionCode,
