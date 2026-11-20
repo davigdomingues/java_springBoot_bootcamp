@@ -17,14 +17,30 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Interceptador global responsável por converter exceções de validação, domínio
- * e compliance em respostas HTTP semânticas e padronizadas.
+ * Interceptador global ({@link RestControllerAdvice}) responsável por traduzir exceções
+ * de validação, domínio, compliance e falhas internas em respostas {@link ApiErrorResponse}.
+ *
+ * <p><strong>Matriz de mapeamento HTTP e impacto arquitetural:</strong></p>
+ * <ul>
+ *     <li>{@code 400 Bad Request}: {@link MethodArgumentNotValidException},
+ *         {@link HttpMessageNotReadableException} e {@link MethodArgumentTypeMismatchException}
+ *         (erros sintáticos ou de conversão antes da camada de negócio).</li>
+ *     <li>{@code 404 Not Found}: {@link ResourceNotFoundException}.</li>
+ *     <li>{@code 422 Unprocessable Entity}: {@link BusinessRuleException},
+ *         {@link UnsupportedPaymentMethodException} e {@link ComplianceViolationException}
+ *         (preservando a lista de violações no campo {@code details}).</li>
+ *     <li>{@code 500 Internal Server Error}: fallback genérico para {@link Exception},
+ *         registrando o stack trace completo apenas em log e devolvendo mensagem opaca.</li>
+ * </ul>
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    /**
+     * Converte falhas de Bean Validation ({@code @Valid}) em HTTP 400 listando cada campo inválido.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex,
@@ -45,6 +61,9 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Trata JSON malformado, enums inválidos ou parâmetros de query incompatíveis com HTTP 400.
+     */
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ApiErrorResponse> handleMalformedRequest(
             Exception ex,
@@ -59,6 +78,9 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Mapeia consultas a códigos de transação inexistentes para HTTP 404.
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex,
@@ -73,6 +95,9 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Mapeia violações de regras das estratégias, adaptador legado ou fábrica para HTTP 422.
+     */
     @ExceptionHandler({BusinessRuleException.class, UnsupportedPaymentMethodException.class})
     public ResponseEntity<ApiErrorResponse> handleBusinessExceptions(
             RuntimeException ex,
@@ -87,6 +112,9 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Mapeia bloqueios da cadeia de compliance para HTTP 422 expondo o código rejeitado e flags.
+     */
     @ExceptionHandler(ComplianceViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleComplianceViolation(
             ComplianceViolationException ex,
@@ -101,6 +129,10 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Fallback de segurança para exceções não previstas, evitando vazamento de stack trace
+     * ou detalhes internos de infraestrutura na resposta HTTP 500.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
             Exception ex,
@@ -120,6 +152,7 @@ public class GlobalExceptionHandler {
         return fieldError.getField() + ": " + fieldError.getDefaultMessage();
     }
 
+    // Extrai a mensagem mais específica disponível sem expor stack trace ao consumidor da API
     private String extractSafeMessage(Exception ex) {
         Throwable root = ex.getCause() != null ? ex.getCause() : ex;
         return root.getMessage() != null ? root.getMessage() : "Invalid request payload";
