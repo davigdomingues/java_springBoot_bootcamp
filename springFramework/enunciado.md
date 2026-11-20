@@ -6,7 +6,7 @@
 
 Chegamos à última etapa da nossa jornada! Agora é o momento de consolidar tudo o que aprendemos sobre Padrões de Projeto (*Design Patterns*).
 
-O objetivo principal é explorar esses conceitos na prática, aplicando os padrões GoF (*Gang of Four* — Criacionais, Estruturais e Comportamentais) com Java puro ou aproveitando os recursos e a produtividade do Spring Framework, entregando uma solução completa que agregue valor real ao seu portfólio.
+O objetivo principal é explorar esses conceitos na prática, aplicando os padrões GoF (*Gang of Four* - Criacionais, Estruturais e Comportamentais) com Java puro ou aproveitando os recursos e a produtividade do Spring Framework, entregando uma solução completa que agregue valor real ao seu portfólio.
 
 ---
 
@@ -32,24 +32,28 @@ Cada desenvolvedor possui seu próprio ritmo e estilo de aprendizagem. Por isso,
 ## 4. Solução Desenvolvida Neste Repositório
 
 - **Abordagem escolhida:** Criar do Zero (Spring Boot 3.5 + Java 21+)
-- **Localização do projeto:** [`projetos/springFramework/design-patterns-payment-hub`](design-patterns-payment-hub/README.md)
+- **Localização do projeto:** [`springFramework/design-patterns-payment-hub`](design-patterns-payment-hub/README.md)
 
 ### Domínio: Payment Hub (Motor de Pagamentos)
+
 API REST modular projetada para processar múltiplos métodos de pagamento (`PIX`, `CREDIT_CARD` e `BOLETO`), realizar validações de risco e conformidade regulatória (*compliance*), liquidar transações em canal externo legado, bonificar clientes com cashback, registrar auditoria e métricas em tempo real.
 
-### 9 Padrões GoF Implementados na Prática:
+### 9 Padrões GoF Implementados na Prática (Categorias GoF)
 
 #### 1. Criacionais
-- **Singleton:** `TransactionCodeGenerator` — implementado via `enum INSTANCE` *thread-safe* para emissão sequencial e monotônica de identificadores únicos (`TXN-YYYYMMDD-NNNNNN`).
-- **Builder:** `PaymentReceiptBuilder` — construção fluente e imutável de recibos e resultados de execução, suportando enriquecimento via `from(existingResult)` em decoradores.
-- **Factory Method / Registry:** `PaymentStrategyFactory` — injeção desacoplada de estratégias em um `EnumMap`, eliminando condicionais acopladas.
+
+- **Singleton:** `TransactionCodeGenerator` - implementado via `enum INSTANCE` *thread-safe* para emissão sequencial e monotônica de identificadores únicos (`TXN-YYYYMMDD-NNNNNN`).
+- **Builder:** `PaymentReceiptBuilder` - construção fluente e imutável de recibos e resultados de execução, suportando enriquecimento via `from(existingResult)` em decoradores.
+- **Factory Method / Registry:** `PaymentStrategyFactory` - injeção desacoplada de estratégias em um `EnumMap`, eliminando condicionais acopladas.
 
 #### 2. Estruturais
-- **Adapter:** `ExternalSettlementPort` + `LegacyMainframeSettlementAdapter` — adapta a comunicação com o mainframe legado posicional delimitado por pipes (`|`) em centavos para a interface moderna da aplicação.
-- **Decorator:** `PaymentExecutionPipeline` (`CorePaymentExecutionPipeline` enriquecido com `CashbackBenefitDecorator` e `ExecutionTelemetryDecorator`) — agrega cálculo de cashback e telemetria de latência dinamicamente.
-- **Facade:** `PaymentOrchestrationFacade` — interface unificada de alto nível que orquestra todo o ciclo de vida do pagamento para os controladores REST.
+
+- **Adapter:** `ExternalSettlementPort` + `LegacyMainframeSettlementAdapter` - adapta a comunicação com o mainframe legado posicional delimitado por pipes (`|`) em centavos para a interface moderna da aplicação.
+- **Decorator:** `PaymentExecutionPipeline` (`CorePaymentExecutionPipeline` enriquecido com `CashbackBenefitDecorator` e `ExecutionTelemetryDecorator`) - agrega cálculo de cashback e telemetria de latência dinamicamente.
+- **Facade:** `PaymentOrchestrationFacade` - interface unificada de alto nível que orquestra todo o ciclo de vida do pagamento para os controladores REST.
 
 #### 3. Comportamentais
-- **Strategy:** `PaymentStrategy` (`PixPaymentStrategy`, `CreditCardPaymentStrategy`, `BoletoPaymentStrategy`) — encapsula regras de validação, cálculo tarifário, status inicial e prazos de liquidação por modalidade.
-- **Chain of Responsibility:** `ComplianceValidationHandler` (`AccountSanctionValidationHandler` $\rightarrow$ `AmountLimitValidationHandler` $\rightarrow$ `VelocityRiskValidationHandler`) — checagens em cadeia para sanções, limites e volumetria suspeita.
+
+- **Strategy:** `PaymentStrategy` (`PixPaymentStrategy`, `CreditCardPaymentStrategy`, `BoletoPaymentStrategy`) - encapsula regras de validação, cálculo tarifário, status inicial e prazos de liquidação por modalidade.
+- **Chain of Responsibility:** `ComplianceValidationHandler` (`AccountSanctionValidationHandler` $\rightarrow$ `AmountLimitValidationHandler` $\rightarrow$ `VelocityRiskValidationHandler`) - checagens em cadeia para sanções, limites e volumetria suspeita.
 - **Observer:** `PaymentEventPublisher` com múltiplos observadores desacoplados (`AuditLogObserver`, `NotificationDispatchObserver` e `MetricsCollectorObserver`).
