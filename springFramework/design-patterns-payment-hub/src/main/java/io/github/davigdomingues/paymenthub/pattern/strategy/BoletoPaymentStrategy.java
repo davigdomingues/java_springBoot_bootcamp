@@ -10,19 +10,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * <strong>Padrão GoF: Strategy (Implementação Concreta - Boleto
- * Bancário)</strong>
+ * Padrão GoF: Strategy (Implementação Concreta - Boleto Bancário)
  *
- * <p>
- * <strong>Estrutura e impacto:</strong> aplica tarifa fixa por tier do cliente
- * (R$ 3,50 STANDARD, R$ 1,75 PREMIUM, R$ 0,00 VIP), exige emissão à vista e
- * valor mínimo
- * de R$ 10,00. Seu principal impacto no ciclo de vida é
- * {@link #resolveInitialStatus()}
- * retornar {@link PaymentStatus#PENDING_SETTLEMENT}, refletindo compensação
- * bancária em
- * até 2 dias úteis na CIP.
- * </p>
+ * Estrutura e impacto: aplica tarifa fixa por tier do cliente (R$ 3,50 STANDARD, R$ 1,75 PREMIUM,
+ * R$ 0,00 VIP), exige emissão à vista e valor mínimo de R$ 10,00. Seu principal impacto no ciclo de
+ * vida é {@link #resolveInitialStatus()} retornar {@link PaymentStatus#PENDING_SETTLEMENT},
+ * refletindo compensação bancária em até 2 dias úteis na CIP.
  */
 @Component
 public class BoletoPaymentStrategy implements PaymentStrategy {
@@ -38,11 +31,9 @@ public class BoletoPaymentStrategy implements PaymentStrategy {
     }
 
     /**
-     * Valida emissão em parcela única e piso mínimo operacional de R$ 10,00 para
-     * boleto.
+     * Valida emissão em parcela única e piso mínimo operacional de R$ 10,00 para boleto.
      *
-     * @throws BusinessRuleException se {@code installments != 1} ou
-     *                               {@code amount < 10.00}
+     * @throws BusinessRuleException se {@code installments != 1} ou {@code amount < 10.00}
      */
     @Override
     public void validateSpecificRules(PaymentContext context) {
@@ -67,8 +58,8 @@ public class BoletoPaymentStrategy implements PaymentStrategy {
     }
 
     /**
-     * Inicia boletos como {@link PaymentStatus#PENDING_SETTLEMENT} por dependerem
-     * de compensação CIP.
+     * Inicia boletos como {@link PaymentStatus#PENDING_SETTLEMENT} por dependerem de compensação
+     * CIP.
      */
     @Override
     public PaymentStatus resolveInitialStatus() {

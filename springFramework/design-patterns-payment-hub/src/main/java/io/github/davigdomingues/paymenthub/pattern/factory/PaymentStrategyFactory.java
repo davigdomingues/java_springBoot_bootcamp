@@ -13,13 +13,13 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * <strong>Padrão GoF: Factory Method / Registry</strong>
+ * Padrão GoF: Factory Method / Registry
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> utiliza injeção automática de
- * {@code List<PaymentStrategy>} pelo contêiner Spring para indexar todas as estratégias em um
- * {@link EnumMap} imutável (lookup O(1) sem condicionais {@code if/else}, respeitando o
- * princípio Aberto-Fechado). Falha imediatamente na inicialização em caso de registro duplicado
- * e protege a execução contra métodos ausentes ou nulos.</p>
+ * Estrutura e ponto de maior impacto: utiliza injeção automática de {@code List<PaymentStrategy>}
+ * pelo contêiner Spring para indexar todas as estratégias em um {@link EnumMap} imutável (lookup
+ * O(1) sem condicionais {@code if/else}, respeitando o princípio Aberto-Fechado). Falha
+ * imediatamente na inicialização em caso de registro duplicado e protege a execução contra métodos
+ * ausentes ou nulos.
  */
 @Component
 public class PaymentStrategyFactory {
@@ -30,7 +30,8 @@ public class PaymentStrategyFactory {
      * Constrói o registro imutável de estratégias validando unicidade por {@link PaymentMethod}.
      *
      * @param strategyBeans implementações de {@link PaymentStrategy} detectadas no contexto
-     * @throws NullPointerException  se {@code strategyBeans} ou algum {@code supportedMethod()} for nulo
+     * @throws NullPointerException se {@code strategyBeans} ou algum {@code supportedMethod()} for
+     *     nulo
      * @throws IllegalStateException se duas estratégias reivindicarem o mesmo {@link PaymentMethod}
      */
     public PaymentStrategyFactory(List<PaymentStrategy> strategyBeans) {

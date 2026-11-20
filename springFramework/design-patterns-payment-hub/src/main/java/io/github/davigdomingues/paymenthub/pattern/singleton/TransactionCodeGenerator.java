@@ -6,14 +6,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * <strong>Padrão GoF: Singleton (Enum Thread-Safe)</strong>
+ * Padrão GoF: Singleton (Enum Thread-Safe)
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> implementa o padrão Singleton
- * via {@code enum INSTANCE} (Effective Java, Item 3), garantindo proteção nativa da JVM
- * contra múltiplas instâncias por serialização ou ataque por reflexão. Utiliza
- * {@link AtomicLong} lock-free e data em UTC para emitir identificadores únicos
- * monotônicos no formato {@code TXN-YYYYMMDD-NNNNNN}, acionado apenas após a verificação
- * de idempotência no Facade para não desperdiçar sequência em retentativas.</p>
+ * Estrutura e ponto de maior impacto: implementa o padrão Singleton via {@code enum INSTANCE}
+ * (Effective Java, Item 3), garantindo proteção nativa da JVM contra múltiplas instâncias por
+ * serialização ou ataque por reflexão. Utiliza {@link AtomicLong} lock-free e data em UTC para
+ * emitir identificadores únicos monotônicos no formato {@code TXN-YYYYMMDD-NNNNNN}, acionado apenas
+ * após a verificação de idempotência no Facade para não desperdiçar sequência em retentativas.
  */
 public enum TransactionCodeGenerator {
     INSTANCE;
@@ -46,8 +45,8 @@ public enum TransactionCodeGenerator {
     /**
      * Reinicia o contador sequencial para zero.
      *
-     * <p><strong>Atenção:</strong> uso restrito ao isolamento entre testes automatizados;
-     * em produção o reset pode colidir com códigos já persistidos pela restrição {@code unique}.</p>
+     * Atenção: uso restrito ao isolamento entre testes automatizados; em produção o reset pode
+     * colidir com códigos já persistidos pela restrição {@code unique}.
      */
     public void resetSequence() {
         sequence.set(0);

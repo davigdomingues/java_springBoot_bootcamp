@@ -11,18 +11,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * <strong>Padrão GoF: Strategy (Implementação Concreta - PIX)</strong>
+ * Padrão GoF: Strategy (Implementação Concreta - PIX)
  *
- * <p>
- * <strong>Estrutura e impacto:</strong> atende transferências instantâneas via
- * SPI/Pix.
- * Exige {@code pixKey} não vazia e pagamento à vista
- * ({@code installments == 1}), aplica
- * isenção tarifária para {@code VIP} ou valores até R$ 5.000,00 e cobra
- * {@code 0,25%} com
- * teto fixo de R$ 25,00 acima desse limite, liquidando imediatamente em
- * {@code APPROVED}.
- * </p>
+ * Estrutura e impacto: atende transferências instantâneas via SPI/Pix. Exige {@code pixKey} não
+ * vazia e pagamento à vista ({@code installments == 1}), aplica isenção tarifária para {@code VIP}
+ * ou valores até R$ 5.000,00 e cobra {@code 0,25%} com teto fixo de R$ 25,00 acima desse limite,
+ * liquidando imediatamente em {@code APPROVED}.
  */
 @Component
 public class PixPaymentStrategy implements PaymentStrategy {
@@ -37,11 +31,10 @@ public class PixPaymentStrategy implements PaymentStrategy {
     }
 
     /**
-     * Valida presença de chave PIX e unicidade de parcela antes da etapa de
-     * compliance.
+     * Valida presença de chave PIX e unicidade de parcela antes da etapa de compliance.
      *
      * @throws BusinessRuleException se {@code pixKey} estiver ausente/vazia ou
-     *                               {@code installments != 1}
+     *     {@code installments != 1}
      */
     @Override
     public void validateSpecificRules(PaymentContext context) {
@@ -54,8 +47,8 @@ public class PixPaymentStrategy implements PaymentStrategy {
     }
 
     /**
-     * Aplica isenção para VIP/valores até R$ 5.000,00 ou 0,25% limitado a R$ 25,00
-     * via {@code HALF_EVEN}.
+     * Aplica isenção para VIP/valores até R$ 5.000,00 ou 0,25% limitado a R$ 25,00 via
+     * {@code HALF_EVEN}.
      */
     @Override
     public BigDecimal calculateFee(PaymentContext context) {

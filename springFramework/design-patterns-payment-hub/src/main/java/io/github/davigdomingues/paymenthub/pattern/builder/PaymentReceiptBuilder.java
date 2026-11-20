@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Builder</strong>
+ * Padrão GoF: Builder
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> possui papel duplo na arquitetura:
- * (1) construir o {@link PaymentExecutionResult} base no {@code CorePaymentExecutionPipeline}
- * validando invariantes financeiras obrigatórias, e (2) possibilitar cópia/enriquecimento
- * imutável via {@link #from(PaymentExecutionResult)} para que os Decorators acrescentem
- * cashback, telemetria e trilha de decorators aplicados sem mutar o resultado original.</p>
+ * Estrutura e ponto de maior impacto: possui papel duplo na arquitetura: (1) construir o
+ * {@link PaymentExecutionResult} base no {@code CorePaymentExecutionPipeline} validando invariantes
+ * financeiras obrigatórias, e (2) possibilitar cópia/enriquecimento imutável via
+ * {@link #from(PaymentExecutionResult)} para que os Decorators acrescentem cashback, telemetria e
+ * trilha de decorators aplicados sem mutar o resultado original.
  */
 public final class PaymentReceiptBuilder {
 
@@ -49,8 +49,8 @@ public final class PaymentReceiptBuilder {
     }
 
     /**
-     * Cria um builder pré-populado a partir de um resultado imutável existente,
-     * permitindo que decorators adicionem informações sem mutar o resultado original.
+     * Cria um builder pré-populado a partir de um resultado imutável existente, permitindo que
+     * decorators adicionem informações sem mutar o resultado original.
      *
      * @param existing resultado base já construído
      * @return novo builder com os atributos copiados
@@ -154,7 +154,7 @@ public final class PaymentReceiptBuilder {
      *
      * @return {@link PaymentExecutionResult} validado e imutável
      * @throws NullPointerException quando {@code transactionCode}, {@code paymentMethod},
-     *                              {@code grossAmount}, {@code feeAmount} ou {@code status} forem nulos
+     *     {@code grossAmount}, {@code feeAmount} ou {@code status} forem nulos
      */
     public PaymentExecutionResult build() {
         Objects.requireNonNull(transactionCode, "transactionCode is required");
