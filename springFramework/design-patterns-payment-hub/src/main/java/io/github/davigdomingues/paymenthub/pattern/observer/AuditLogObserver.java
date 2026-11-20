@@ -10,14 +10,19 @@ import java.util.Objects;
 /**
  * <strong>Padrão GoF: Observer (Concrete Observer - Trilha de Auditoria)</strong>
  *
- * <p>Persiste um registro imutável em {@code payment_audit_logs} para cada evento
- * relevante de criação, rejeição ou estorno de pagamento.</p>
+ * <p><strong>Estrutura e impacto:</strong> reage a todos os eventos emitidos pelo
+ * {@link PaymentEventPublisher} gravando um registro append-only em {@code payment_audit_logs}.
+ * Sua atuação conjunta com {@code noRollbackFor = ComplianceViolationException.class} no
+ * Facade assegura que até mesmo bloqueios de compliance fiquem auditáveis em banco.</p>
  */
 @Component
 public class AuditLogObserver implements PaymentEventObserver {
 
     private final PaymentAuditLogRepository auditLogRepository;
 
+    /**
+     * @throws NullPointerException quando {@code auditLogRepository} for nulo
+     */
     public AuditLogObserver(PaymentAuditLogRepository auditLogRepository) {
         this.auditLogRepository = Objects.requireNonNull(auditLogRepository, "auditLogRepository must not be null");
     }

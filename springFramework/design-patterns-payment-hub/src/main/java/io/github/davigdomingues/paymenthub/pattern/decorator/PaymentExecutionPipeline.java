@@ -7,9 +7,11 @@ import io.github.davigdomingues.paymenthub.domain.model.RiskAssessment;
 /**
  * <strong>Padrão GoF: Decorator (Component Interface)</strong>
  *
- * <p>Contrato do pipeline de execução de pagamentos que permite compor dinamicamente
- * responsabilidades adicionais (benefícios, telemetria, auditoria técnica) em torno
- * do núcleo de liquidação.</p>
+ * <p><strong>Estrutura e impacto:</strong> define o contrato único implementado tanto pelo
+ * componente núcleo ({@code CorePaymentExecutionPipeline}) quanto pelos decorators da pilha
+ * ({@code ExecutionTelemetryDecorator} → {@code CashbackBenefitDecorator} → {@code Core}).
+ * Essa uniformidade permite compor benefícios e observabilidade técnica em torno da
+ * liquidação financeira sem alterar ou acoplar o componente central.</p>
  */
 public interface PaymentExecutionPipeline {
 

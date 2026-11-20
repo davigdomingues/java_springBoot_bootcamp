@@ -12,14 +12,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * <strong>Padrão GoF: Observer (Subject / Event Publisher)</strong>
  *
- * <p>Gerencia dinamicamente os observadores inscritos e propaga eventos de pagamento
- * isolando eventuais falhas individuais para preservar a resiliência do fluxo.</p>
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> mantém os observadores em
+ * {@link CopyOnWriteArrayList} com registro idempotente ({@code addIfAbsent}), garantindo
+ * iteração lock-free segura mesmo sob inscrições/remoções concorrentes em runtime.
+ * O ponto crítico de resiliência reside em {@link #notifyObservers(PaymentProcessedEvent)}:
+ * um bloco {@code try/catch (RuntimeException)} isola cada observador para que a falha
+ * de um canal (ex.: disparo de notificação) nunca impeça a gravação da auditoria ou a
+ * atualização de métricas, nem cause rollback inesperado no Facade.</p>
  */
 @Component
 public class PaymentEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentEventPublisher.class);
 
+    // CopyOnWriteArrayList evita ConcurrentModificationException durante leitura concorrente à inscrição
     private final CopyOnWriteArrayList<PaymentEventObserver> observers;
 
     public PaymentEventPublisher(List<PaymentEventObserver> observerBeans) {
@@ -30,9 +36,10 @@ public class PaymentEventPublisher {
     }
 
     /**
-     * Inscreve um novo observador caso ainda não esteja registrado.
+     * Inscreve um novo observador de forma idempotente caso ainda não esteja registrado.
      *
      * @param observer instância do observador
+     * @throws NullPointerException quando {@code observer} for nulo
      */
     public void subscribe(PaymentEventObserver observer) {
         Objects.requireNonNull(observer, "observer must not be null");
@@ -51,9 +58,10 @@ public class PaymentEventPublisher {
     }
 
     /**
-     * Notifica todos os observadores inscritos sobre um novo evento de pagamento.
+     * Notifica todos os observadores inscritos isolando exceções individuais de execução.
      *
      * @param event evento imutável ocorrido
+     * @throws NullPointerException quando {@code event} for nulo
      */
     public void notifyObservers(PaymentProcessedEvent event) {
         Objects.requireNonNull(event, "event must not be null");
@@ -61,6 +69,7 @@ public class PaymentEventPublisher {
             try {
                 observer.onPaymentEvent(event);
             } catch (RuntimeException ex) {
+                // Isolamento de falha: erro em um assinante é logado sem abortar auditoria nem métricas
                 log.error(
                         "Observer failure observer={} transactionCode={} eventType={}",
                         observer.observerName(),

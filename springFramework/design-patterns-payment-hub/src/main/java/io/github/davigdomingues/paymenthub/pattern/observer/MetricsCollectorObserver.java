@@ -15,8 +15,13 @@ import java.util.Map;
 /**
  * <strong>Padrão GoF: Observer (Concrete Observer - Coletor de Métricas)</strong>
  *
- * <p>Mantém contadores e volumes financeiros consolidados em memória de forma
- * thread-safe para consultas rápidas de observabilidade.</p>
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> consolida contadores operacionais
+ * e acumuladores monetários ({@link BigDecimal}) em memória para leitura rápida via
+ * {@code MetricsController}. A sincronização mútua ({@code synchronized}) entre
+ * {@link #onPaymentEvent(PaymentProcessedEvent)}, {@link #getSummary()} e {@link #reset()}
+ * garante snapshots consistentes entre contadores e volumes. Em eventos de estorno
+ * ({@code PAYMENT_REFUNDED}), incrementa apenas {@code refundedCount} e {@code countByStatus}
+ * sem recomputar {@code totalTransactions}, {@code countByMethod} nem volumes financeiros.</p>
  */
 @Component
 public class MetricsCollectorObserver implements PaymentEventObserver {
@@ -39,8 +44,12 @@ public class MetricsCollectorObserver implements PaymentEventObserver {
         return "MetricsCollectorObserver";
     }
 
+    /**
+     * Atualiza atomicamente os acumuladores e mapas de contagem conforme o tipo/status do evento.
+     */
     @Override
     public synchronized void onPaymentEvent(PaymentProcessedEvent event) {
+        // Estornos atualizam apenas o contador de reembolso para não inflar volume bruto ou total de pagamentos
         if (EVENT_PAYMENT_REFUNDED.equals(event.eventType())) {
             refundedCount++;
             countByStatus.merge(PaymentStatus.REFUNDED, 1L, Long::sum);
@@ -60,13 +69,14 @@ public class MetricsCollectorObserver implements PaymentEventObserver {
                 pendingSettlementCount++;
                 accumulateFinancials(event);
             }
+            // Transações rejeitadas não movimentam volume bruto, tarifa nem cashback
             case REJECTED -> rejectedCount++;
             case REFUNDED -> refundedCount++;
         }
     }
 
     /**
-     * Retorna um snapshot imutável das métricas acumuladas até o momento.
+     * Retorna um snapshot imutável e atomicamente consistente das métricas acumuladas.
      *
      * @return resumo consolidado das métricas de pagamento
      */
@@ -86,7 +96,7 @@ public class MetricsCollectorObserver implements PaymentEventObserver {
     }
 
     /**
-     * Zera todos os contadores e acumuladores em memória (útil para isolamento de testes).
+     * Zera todos os contadores e acumuladores em memória (essencial para isolamento entre testes).
      */
     public synchronized void reset() {
         totalTransactions = 0L;

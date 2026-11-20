@@ -8,11 +8,14 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Adapter (Implementação Concreta)</strong>
+ * <strong>Padrão GoF: Adapter (Implementação Concreta / Fronteira Anticorrupção)</strong>
  *
- * <p>Adapta o contrato moderno {@link ExternalSettlementPort} ao protocolo posicional
- * delimitado por pipe exigido por {@link LegacyMainframeClient}, convertendo valores
- * decimais para centavos, sanitizando delimitadores e interpretando códigos de retorno.</p>
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> traduz o contrato tipado
+ * {@link ExternalSettlementPort} para o protocolo posicional de {@link LegacyMainframeClient}.
+ * Seus três mecanismos críticos são: (1) conversão exata {@code BigDecimal → centavos} via
+ * {@link BigDecimal#longValueExact()} para evitar arredondamento silencioso ou overflow;
+ * (2) sanitização de caracteres {@code |} nos campos textuais para prevenir corrupção posicional
+ * do frame legado; e (3) conversão de respostas {@code ERR|...} ou vazias em {@link BusinessRuleException}.</p>
  */
 @Component
 public class LegacyMainframeSettlementAdapter implements ExternalSettlementPort {
@@ -25,6 +28,13 @@ public class LegacyMainframeSettlementAdapter implements ExternalSettlementPort 
         this.mainframeClient = Objects.requireNonNull(mainframeClient, "mainframeClient must not be null");
     }
 
+    /**
+     * Traduz a requisição moderna em frame {@code SETTLE|...} com valor em centavos.
+     *
+     * @throws NullPointerException  quando {@code request} for nulo
+     * @throws ArithmeticException   se o valor em centavos exceder {@code Long.MAX_VALUE}
+     * @throws BusinessRuleException se o mainframe responder {@code ERR|...} ou resposta vazia
+     */
     @Override
     public SettlementResponse settle(SettlementRequest request) {
         Objects.requireNonNull(request, "request must not be null");
@@ -44,6 +54,13 @@ public class LegacyMainframeSettlementAdapter implements ExternalSettlementPort 
         return parseProtocolResponse(rawResponse);
     }
 
+    /**
+     * Traduz o estorno para frame {@code REFUND|authCode|centavos}.
+     *
+     * @throws NullPointerException  quando {@code amount} for nulo
+     * @throws BusinessRuleException quando {@code externalAuthorizationCode} estiver vazio ou
+     *                               o mainframe rejeitar o frame
+     */
     @Override
     public SettlementResponse refund(String externalAuthorizationCode, BigDecimal amount) {
         if (externalAuthorizationCode == null || externalAuthorizationCode.isBlank()) {
@@ -64,12 +81,14 @@ public class LegacyMainframeSettlementAdapter implements ExternalSettlementPort 
     }
 
     private long toCents(BigDecimal amount) {
+        // longValueExact falha explicitamente em caso de overflow ou fração residual inesperada
         return amount.setScale(2, RoundingMode.HALF_EVEN)
                 .multiply(ONE_HUNDRED)
                 .longValueExact();
     }
 
     private String sanitize(String field) {
+        // Substitui pipes para impedir deslocamento posicional de colunas no parser legado
         return field == null ? "" : field.replace("|", "_").trim();
     }
 

@@ -5,8 +5,17 @@ import io.github.davigdomingues.paymenthub.domain.model.PaymentProcessedEvent;
 /**
  * <strong>Padrão GoF: Observer (Observer Interface)</strong>
  *
- * <p>Contrato para assinantes reativos interessados em eventos do ciclo de vida
- * das transações de pagamento.</p>
+ * <p>
+ * <strong>Estrutura e impacto:</strong> contrato reativo implementado por todos
+ * os
+ * assinantes do barramento de eventos ({@code AuditLogObserver},
+ * {@code NotificationDispatchObserver} e {@code MetricsCollectorObserver}).
+ * Desacopla o
+ * {@code PaymentOrchestrationFacade} de efeitos colaterais pós-transação e
+ * permite que o
+ * {@link PaymentEventPublisher} isole exceções individuais sem abortar os
+ * demais assinantes.
+ * </p>
  */
 public interface PaymentEventObserver {
 

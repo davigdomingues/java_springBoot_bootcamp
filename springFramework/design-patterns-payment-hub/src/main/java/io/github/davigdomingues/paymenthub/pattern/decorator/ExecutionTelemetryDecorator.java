@@ -12,8 +12,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * <strong>Padrão GoF: Decorator (Concrete Decorator - Telemetria de Execução)</strong>
  *
- * <p>Mensura o tempo total gasto pelo pipeline subjacente em milissegundos e registra
- * a métrica de latência no recibo final de execução.</p>
+ * <p><strong>Estrutura e impacto:</strong> atua como camada mais externa da pilha
+ * ({@code ExecutionTelemetryDecorator} → {@code CashbackBenefitDecorator} → {@code Core}),
+ * capturando a latência total do processamento (incluindo cálculo de cashback e liquidação
+ * no adaptador legado) com relógio monotônico {@link System#nanoTime()} — imune a saltos de
+ * relógio de parede (NTP) — e gravando o tempo no recibo imutável e na trilha {@code appliedDecorators}.</p>
  */
 public class ExecutionTelemetryDecorator extends AbstractPaymentPipelineDecorator {
 
@@ -24,8 +27,12 @@ public class ExecutionTelemetryDecorator extends AbstractPaymentPipelineDecorato
         super(delegate);
     }
 
+    /**
+     * Mensura o tempo decorrido do pipeline delegado e devolve cópia imutável com {@code processingTimeMs}.
+     */
     @Override
     public PaymentExecutionResult execute(PaymentContext context, RiskAssessment riskAssessment) {
+        // System.nanoTime fornece medição monotônica confiável de duração sem depender do relógio do SO
         long startedAtNanos = System.nanoTime();
         PaymentExecutionResult innerResult = delegate.execute(context, riskAssessment);
         long elapsedMs = Math.max(0L, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAtNanos));

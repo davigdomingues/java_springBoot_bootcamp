@@ -12,15 +12,21 @@ import java.util.Objects;
 /**
  * <strong>Padrão GoF: Observer (Concrete Observer - Despacho de Notificações)</strong>
  *
- * <p>Registra notificações multicanal no banco conforme o desfecho da transação:
- * {@code PUSH} e {@code EMAIL} para transações aceitas ou estornadas, e
- * {@code EMAIL} + {@code FRAUD_ALERT_WEBHOOK} para bloqueios de compliance.</p>
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> roteia cada evento para dois canais
+ * persistidos em {@code notification_logs} conforme o status resultante: em bloqueios de
+ * compliance ({@link PaymentStatus#REJECTED}), além de avisar o pagador por {@code EMAIL},
+ * aciona o canal crítico {@code FRAUD_ALERT_WEBHOOK} para a equipe de segurança; nos demais
+ * desfechos ({@code APPROVED}, {@code PENDING_SETTLEMENT}, {@code REFUNDED}), dispara
+ * {@code PUSH} ao pagador e {@code EMAIL} ao recebedor.</p>
  */
 @Component
 public class NotificationDispatchObserver implements PaymentEventObserver {
 
     private final NotificationLogRepository notificationLogRepository;
 
+    /**
+     * @throws NullPointerException quando {@code notificationLogRepository} for nulo
+     */
     public NotificationDispatchObserver(NotificationLogRepository notificationLogRepository) {
         this.notificationLogRepository = Objects.requireNonNull(
                 notificationLogRepository,

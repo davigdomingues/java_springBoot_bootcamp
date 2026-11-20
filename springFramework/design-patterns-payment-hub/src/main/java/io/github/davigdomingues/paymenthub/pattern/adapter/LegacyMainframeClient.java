@@ -8,8 +8,12 @@ import java.util.UUID;
 /**
  * <strong>Padrão GoF: Adapter (Adaptee - Cliente de Mainframe Legado)</strong>
  *
- * <p>Simula um conector bancário legado cujo protocolo exige mensagens posicionais
- * delimitadas por pipe ({@code |}) com valores em centavos.</p>
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> simula um barramento bancário
+ * legado com interface incompatível com o domínio moderno: opera exclusivamente por meio
+ * de strings posicionais delimitadas por pipe ({@code |}) e quantias inteiras em centavos.
+ * Devolve strings no padrão {@code OK|AUTH/REV-...|CANAL} ou {@code ERR|CODIGO|MENSAGEM},
+ * exigindo tradução e proteção contra injeção de delimitadores pelo
+ * {@link LegacyMainframeSettlementAdapter}.</p>
  */
 @Component
 public class LegacyMainframeClient {

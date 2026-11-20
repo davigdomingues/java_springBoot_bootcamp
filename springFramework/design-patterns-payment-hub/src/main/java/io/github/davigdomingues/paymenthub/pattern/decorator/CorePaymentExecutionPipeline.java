@@ -18,8 +18,19 @@ import java.util.Objects;
 /**
  * <strong>Padrão GoF: Decorator (Concrete Component)</strong>
  *
- * <p>Núcleo de execução do pagamento: resolve a estratégia pela Factory, calcula a tarifa,
- * executa a liquidação via Adapter e monta o recibo base usando o Builder.</p>
+ * <p>
+ * <strong>Estrutura e ponto de maior impacto:</strong> representa o núcleo
+ * indivisível
+ * de execução após aprovação na Chain of Responsibility. Integra quatro padrões
+ * em sequência:
+ * resolve a {@code PaymentStrategy} via Factory, calcula tarifa e valor líquido
+ * ({@code HALF_EVEN}),
+ * efetiva a liquidação no mainframe via {@link ExternalSettlementPort}
+ * (Adapter) e constrói o
+ * recibo base imutável via {@link PaymentReceiptBuilder}. Os decorators
+ * externos enriquecem
+ * esse recibo sem modificar esta classe.
+ * </p>
  */
 @Component
 public class CorePaymentExecutionPipeline implements PaymentExecutionPipeline {
@@ -29,12 +40,38 @@ public class CorePaymentExecutionPipeline implements PaymentExecutionPipeline {
 
     public CorePaymentExecutionPipeline(
             PaymentStrategyFactory strategyFactory,
-            ExternalSettlementPort settlementPort
-    ) {
+            ExternalSettlementPort settlementPort) {
         this.strategyFactory = Objects.requireNonNull(strategyFactory, "strategyFactory must not be null");
         this.settlementPort = Objects.requireNonNull(settlementPort, "settlementPort must not be null");
     }
 
+    /**
+     * Executa tarifa, liquidação externa e montagem do recibo base com cashback
+     * inicial zerado.
+     *
+     * @throws NullPointerException                                                            quando
+     *                                                                                         {@code context}
+     *                                                                                         ou
+     *                                                                                         {@code riskAssessment}
+     *                                                                                         forem
+     *                                                                                         nulos
+     * @throws io.github.davigdomingues.paymenthub.exception.UnsupportedPaymentMethodException
+     *                                                                                         se
+     *                                                                                         o
+     *                                                                                         método
+     *                                                                                         não
+     *                                                                                         possuir
+     *                                                                                         estratégia
+     *                                                                                         registrada
+     * @throws io.github.davigdomingues.paymenthub.exception.BusinessRuleException
+     *                                                                                         se
+     *                                                                                         a
+     *                                                                                         liquidação
+     *                                                                                         no
+     *                                                                                         adaptador
+     *                                                                                         legado
+     *                                                                                         falhar
+     */
     @Override
     public PaymentExecutionResult execute(PaymentContext context, RiskAssessment riskAssessment) {
         Objects.requireNonNull(context, "context must not be null");
@@ -49,8 +86,7 @@ public class CorePaymentExecutionPipeline implements PaymentExecutionPipeline {
                 context.amount(),
                 context.paymentMethod(),
                 context.payerDocument(),
-                context.payeeDocument()
-        ));
+                context.payeeDocument()));
 
         return PaymentReceiptBuilder.builder()
                 .transactionCode(context.transactionCode())
