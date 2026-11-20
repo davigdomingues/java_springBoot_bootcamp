@@ -12,10 +12,17 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Testes unitários do Singleton {@link TransactionCodeGenerator}.
+ *
+ * <p>Valida unicidade da instância {@code enum INSTANCE}, ordenação monotônica em UTC
+ * e ausência de colisões sob concorrência real com múltiplas threads sincronizadas.</p>
+ */
 class TransactionCodeGeneratorTest {
 
     @BeforeEach
     void setUp() {
+        // Isolamento obrigatório por se tratar de contador global em memória
         TransactionCodeGenerator.INSTANCE.resetSequence();
     }
 
@@ -39,6 +46,7 @@ class TransactionCodeGeneratorTest {
         int threads = 8;
         int codesPerThread = 50;
         Set<String> generatedCodes = ConcurrentHashMap.newKeySet();
+        // Barreiras garantem disputa simultânea pelo AtomicLong em todas as threads
         CountDownLatch readyLatch = new CountDownLatch(threads);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threads);

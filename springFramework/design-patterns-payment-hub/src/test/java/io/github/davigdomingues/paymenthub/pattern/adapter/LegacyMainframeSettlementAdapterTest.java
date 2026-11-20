@@ -15,6 +15,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes unitários do Adapter {@link LegacyMainframeSettlementAdapter}.
+ *
+ * <p>Valida serialização decimal → centavos, sanitização de delimitadores {@code |} contra
+ * corrupção posicional do frame, comandos {@code SETTLE}/{@code REFUND} e tradução de
+ * respostas {@code ERR|...} para {@link BusinessRuleException}.</p>
+ */
 @ExtendWith(MockitoExtension.class)
 class LegacyMainframeSettlementAdapterTest {
 
@@ -23,6 +30,7 @@ class LegacyMainframeSettlementAdapterTest {
         LegacyMainframeClient spyClient = Mockito.spy(new LegacyMainframeClient());
         LegacyMainframeSettlementAdapter adapter = new LegacyMainframeSettlementAdapter(spyClient);
 
+        // Código contém pipes intencionais para comprovar sanitização antes do envio ao mainframe
         SettlementResponse response = adapter.settle(new SettlementRequest(
                 "TXN|20261119|000001",
                 new BigDecimal("123.45"),

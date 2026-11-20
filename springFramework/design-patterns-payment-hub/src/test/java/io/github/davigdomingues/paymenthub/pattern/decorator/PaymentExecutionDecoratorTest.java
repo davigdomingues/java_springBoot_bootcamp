@@ -20,6 +20,13 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Testes unitários da composição de Decorators sobre {@link CorePaymentExecutionPipeline}.
+ *
+ * <p>Valida a ordem de empilhamento ({@code ExecutionTelemetryDecorator} →
+ * {@code CashbackBenefitDecorator} → {@code Core}), cálculo e teto de cashback por tier,
+ * latência registrada e rastreabilidade em {@code appliedDecorators}.</p>
+ */
 class PaymentExecutionDecoratorTest {
 
     private PaymentExecutionPipeline pipeline;

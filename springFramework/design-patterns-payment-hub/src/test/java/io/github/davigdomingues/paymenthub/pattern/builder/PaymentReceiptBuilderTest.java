@@ -11,6 +11,13 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Testes unitários do Builder {@link PaymentReceiptBuilder}.
+ *
+ * <p>Verifica normalização de escala monetária, derivação automática de {@code netAmount},
+ * imutabilidade de listas defensivas, preservação do objeto original em {@code from(...)}
+ * e falha explícita ({@link NullPointerException}) para campos obrigatórios ausentes.</p>
+ */
 class PaymentReceiptBuilderTest {
 
     @Test
@@ -33,6 +40,7 @@ class PaymentReceiptBuilderTest {
         assertThat(result.cashbackAmount()).isEqualByComparingTo("0.00");
         assertThat(result.netAmount()).isEqualByComparingTo("989.50");
         assertThat(result.appliedDecorators()).containsExactly("CashbackBenefitDecorator");
+        // Garante cópia defensiva imutável contra alteração pós-build
         assertThatThrownBy(() -> result.appliedDecorators().add("Another"))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
@@ -48,6 +56,7 @@ class PaymentReceiptBuilderTest {
                 .addDecoratorApplied("CashbackBenefitDecorator")
                 .build();
 
+        // Ponto crítico para Decorators: enriquecimento cria nova instância sem alterar o recibo base
         PaymentExecutionResult enriched = PaymentReceiptBuilder.from(original)
                 .cashbackAmount(new BigDecimal("10.00"))
                 .processingTimeMs(15L)

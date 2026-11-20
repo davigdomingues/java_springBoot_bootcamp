@@ -12,6 +12,12 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Testes unitários das implementações de {@link PaymentStrategy} (PIX, Cartão de Crédito e Boleto).
+ *
+ * <p>Cobre regras específicas de validação ({@link BusinessRuleException}), cálculos de
+ * tarifas com tetos/pisos por {@link CustomerTier} e definição do {@link PaymentStatus} inicial.</p>
+ */
 class PaymentStrategyTest {
 
     private final PixPaymentStrategy pixStrategy = new PixPaymentStrategy();

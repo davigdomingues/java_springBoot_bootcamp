@@ -24,6 +24,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Testes de integração ponta a ponta do {@link PaymentController} e {@link MetricsController}
+ * com contexto Spring completo, banco H2 em memória e {@link MockMvc}.
+ *
+ * <p><strong>Cobertura crítica:</strong> valida os 9 padrões GoF atuando em conjunto nas rotas
+ * REST (PIX VIP, Cartão parcelado, Boleto {@code PENDING_SETTLEMENT}, idempotência, simulação
+ * sem persistência, estorno com trilha atualizada, persistência após HTTP {@code 422} por
+ * {@code noRollbackFor = ComplianceViolationException.class}, padronização de erros
+ * {@code 400}/{@code 404} e exposição de {@code /v3/api-docs}).</p>
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class PaymentControllerIntegrationTest {
@@ -48,6 +58,7 @@ class PaymentControllerIntegrationTest {
 
     @BeforeEach
     void cleanState() {
+        // Limpa banco H2 e estado global em memória (Singleton + Observer de métricas) entre testes
         notificationLogRepository.deleteAll();
         auditLogRepository.deleteAll();
         transactionRepository.deleteAll();
@@ -227,6 +238,7 @@ class PaymentControllerIntegrationTest {
                 }
                 """;
 
+        // Comprova efeito prático de noRollbackFor: HTTP 422 é devolvido, mas transação e alerta persistem no H2
         MvcResult errorResult = mockMvc.perform(post("/api/v1/payments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(sanctionedPayload))

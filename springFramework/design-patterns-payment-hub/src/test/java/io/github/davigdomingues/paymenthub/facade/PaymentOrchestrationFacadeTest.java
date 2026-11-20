@@ -44,6 +44,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes unitários da orquestração no {@link PaymentOrchestrationFacade}.
+ *
+ * <p>Foca nos fluxos críticos de alto impacto: (1) curto-circuito de idempotência com
+ * {@code verifyNoInteractions} antes de compliance/liquidação/eventos; (2) bloqueio de
+ * compliance persistindo transação {@code REJECTED} + evento {@code PAYMENT_REJECTED} antes
+ * de lançar {@link ComplianceViolationException}; e (3) estorno único impedindo duplo
+ * reembolso via {@link BusinessRuleException}.</p>
+ */
 @ExtendWith(MockitoExtension.class)
 class PaymentOrchestrationFacadeTest {
 
@@ -72,6 +81,7 @@ class PaymentOrchestrationFacadeTest {
 
     @BeforeEach
     void setUp() {
+        // Garante sequência determinística independente da ordem de execução dos testes
         TransactionCodeGenerator.INSTANCE.resetSequence();
         PaymentStrategyFactory strategyFactory = new PaymentStrategyFactory(List.of(new PixPaymentStrategy()));
         this.facade = new PaymentOrchestrationFacade(
@@ -118,6 +128,7 @@ class PaymentOrchestrationFacadeTest {
 
         assertThat(response.transactionCode()).isEqualTo("TXN-20261119-000001");
         assertThat(response.externalAuthorizationCode()).isEqualTo("AUTH-EXISTING");
+        // Idempotência deve retornar imediatamente sem reexecutar cadeia, pipeline ou observadores
         verifyNoInteractions(complianceChain, executionPipeline, eventPublisher);
     }
 

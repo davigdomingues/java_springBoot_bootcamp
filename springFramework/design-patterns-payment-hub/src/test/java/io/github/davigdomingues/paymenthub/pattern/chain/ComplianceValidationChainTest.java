@@ -20,6 +20,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes unitários da cadeia {@link ComplianceValidationHandler}.
+ *
+ * <p>Verifica aprovação limpa, <strong>curto-circuito</strong> sem acesso ao repositório em
+ * bloqueios determinísticos ({@code verifyNoInteractions}), acúmulo cumulativo de score/flags
+ * entre elos (Valor + Velocidade) e bloqueio por teto de modalidade ou rajada.</p>
+ */
 @ExtendWith(MockitoExtension.class)
 class ComplianceValidationChainTest {
 
@@ -58,6 +65,7 @@ class ComplianceValidationChainTest {
         assertThat(assessment.riskLevel()).isEqualTo(RiskLevel.BLOCKED);
         assertThat(assessment.riskScore()).isEqualTo(100);
         assertThat(assessment.flags()).containsExactly("SANCTIONED_DOCUMENT");
+        // Confirma que o curto-circuito impediu chamada SQL ao elo de velocidade
         verifyNoInteractions(transactionRepository);
     }
 
@@ -79,6 +87,7 @@ class ComplianceValidationChainTest {
         RiskAssessment assessment = chain.validate(context("12345678901", "98765432100", "25000.00", PaymentMethod.PIX));
 
         assertThat(assessment.approved()).isTrue();
+        // 35 pts (HIGH_VALUE_TRANSACTION) + 30 pts (ELEVATED_VELOCITY) = 65 pts => RiskLevel.HIGH
         assertThat(assessment.riskScore()).isEqualTo(65);
         assertThat(assessment.riskLevel()).isEqualTo(RiskLevel.HIGH);
         assertThat(assessment.flags()).containsExactly("HIGH_VALUE_TRANSACTION", "ELEVATED_VELOCITY");
