@@ -8,8 +8,11 @@ import java.util.Set;
 /**
  * <strong>Padrão GoF: Chain of Responsibility (Elo 1 - Sanções e Autotransferência)</strong>
  *
- * <p>Bloqueia documentos presentes em listas restritivas de compliance ou operações
- * em que pagador e recebedor possuem o mesmo documento.</p>
+ * <p><strong>Estrutura e impacto:</strong> posicionado intencionalmente como primeiro elo
+ * da cadeia ({@code PaymentPatternWiringConfig}) por ser puramente em memória e O(1).
+ * Bloqueia imediatamente documentos sancionados (lista configurável via propriedades)
+ * ou autotransferências ({@code payerDocument == payeeDocument}), acionando o curto-circuito
+ * da cadeia antes das validações de limite e consulta de velocidade em banco.</p>
  */
 public class AccountSanctionValidationHandler extends ComplianceValidationHandler {
 

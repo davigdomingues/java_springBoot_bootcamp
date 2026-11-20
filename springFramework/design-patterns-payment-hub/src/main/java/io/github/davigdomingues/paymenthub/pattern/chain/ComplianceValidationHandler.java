@@ -6,11 +6,22 @@ import io.github.davigdomingues.paymenthub.domain.model.RiskAssessment;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Chain of Responsibility (Handler Base)</strong>
+ * <strong>Padrão GoF: Chain of Responsibility (Handler Base + Template
+ * Method)</strong>
  *
- * <p>Define a estrutura encadeada de validadores de compliance e antifraude.
- * Cada elo avalia o contexto de pagamento, acumula pontuação/flags de risco
- * e interrompe a cadeia imediatamente caso detecte uma violação bloqueante.</p>
+ * <p>
+ * <strong>Estrutura e ponto de maior impacto:</strong> define o esqueleto
+ * imutável
+ * ({@code final}) da cadeia de compliance e antifraude. Cada elo recebe o
+ * {@link RiskAssessment}
+ * acumulado, produz uma nova instância imutável via
+ * {@link #evaluate(PaymentContext, RiskAssessment)}
+ * e aplica <strong>curto-circuito imediato</strong> quando
+ * {@code !updated.approved()},
+ * evitando consultas custosas ao banco em elos posteriores (como controle de
+ * velocidade)
+ * após bloqueios determinísticos prévios.
+ * </p>
  */
 public abstract class ComplianceValidationHandler {
 
@@ -20,7 +31,9 @@ public abstract class ComplianceValidationHandler {
      * Encadeia o próximo validador após este elo.
      *
      * @param next próximo handler da cadeia
-     * @return o próprio {@code next}, permitindo encadeamento fluente {@code a.linkWith(b).linkWith(c)}
+     * @return o próprio {@code next}, permitindo encadeamento fluente
+     *         {@code a.linkWith(b).linkWith(c)}
+     * @throws NullPointerException quando {@code next} for nulo
      */
     public ComplianceValidationHandler linkWith(ComplianceValidationHandler next) {
         this.next = Objects.requireNonNull(next, "next handler must not be null");
@@ -32,24 +45,30 @@ public abstract class ComplianceValidationHandler {
      *
      * @param context contexto imutável do pagamento
      * @return avaliação consolidada da cadeia
+     * @throws NullPointerException quando {@code context} for nulo
      */
     public RiskAssessment validate(PaymentContext context) {
         return validate(context, RiskAssessment.clean());
     }
 
     /**
-     * Executa este elo e propaga a avaliação acumulada para o próximo elo
-     * apenas enquanto a transação permanecer aprovada.
+     * Template Method que executa este elo e propaga a avaliação acumulada para o
+     * próximo elo
+     * somente enquanto a operação permanecer aprovada.
      *
      * @param context contexto imutável do pagamento
      * @param current avaliação acumulada pelos elos anteriores
      * @return avaliação atualizada
+     * @throws NullPointerException quando {@code context} ou {@code current} forem
+     *                              nulos
      */
     public final RiskAssessment validate(PaymentContext context, RiskAssessment current) {
         Objects.requireNonNull(context, "context must not be null");
         Objects.requireNonNull(current, "current RiskAssessment must not be null");
 
         RiskAssessment updated = evaluate(context, current);
+        // Curto-circuito impede chamadas subsequentes (inclusive I/O de banco) após
+        // primeiro bloqueio
         if (!updated.approved() || next == null) {
             return updated;
         }

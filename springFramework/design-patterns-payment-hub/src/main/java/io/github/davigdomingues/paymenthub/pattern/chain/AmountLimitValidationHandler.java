@@ -10,8 +10,11 @@ import java.util.Objects;
 /**
  * <strong>Padrão GoF: Chain of Responsibility (Elo 2 - Limites de Valor)</strong>
  *
- * <p>Impõe limites operacionais por teto global e por modalidade (Boleto) e sinaliza
- * transações de alto valor adicionando pontuação de risco para monitoramento.</p>
+ * <p><strong>Estrutura e impacto:</strong> avalia limites monetários sem acesso a banco
+ * antes do elo de velocidade: bloqueia valores acima do teto global (padrão R$ 100.000,00)
+ * ou acima do teto específico de Boleto (padrão R$ 50.000,00), e adiciona {@code +35} pontos
+ * de risco ({@code HIGH_VALUE_TRANSACTION}) para operações acima de R$ 20.000,00, permitindo
+ * que a pontuação seja somada a outros sinais no elo seguinte.</p>
  */
 public class AmountLimitValidationHandler extends ComplianceValidationHandler {
 
@@ -28,6 +31,11 @@ public class AmountLimitValidationHandler extends ComplianceValidationHandler {
         this(DEFAULT_MAX_GLOBAL_AMOUNT, DEFAULT_MAX_BOLETO_AMOUNT, DEFAULT_HIGH_VALUE_THRESHOLD);
     }
 
+    /**
+     * Inicializa limites configuráveis da etapa de valor.
+     *
+     * @throws NullPointerException quando qualquer limite informado for nulo
+     */
     public AmountLimitValidationHandler(
             BigDecimal maxGlobalAmount,
             BigDecimal maxBoletoAmount,
@@ -47,6 +55,7 @@ public class AmountLimitValidationHandler extends ComplianceValidationHandler {
         if (context.paymentMethod() == PaymentMethod.BOLETO && amount.compareTo(maxBoletoAmount) > 0) {
             return current.block("BOLETO_AMOUNT_LIMIT_EXCEEDED");
         }
+        // Acima do limiar de alto valor, eleva score sem bloquear para compor análise cumulativa
         if (amount.compareTo(highValueThreshold) > 0) {
             return current.withAddedRisk(HIGH_VALUE_RISK_POINTS, "HIGH_VALUE_TRANSACTION");
         }
