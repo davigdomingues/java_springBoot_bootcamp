@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Resultado imutável consolidado pelo pipeline de execução (Core + Decorators)
- * e construído por meio do {@code PaymentReceiptBuilder}.
+ * Resultado imutável consolidado pelo pipeline de execução (Core + Decorators) e construído por
+ * meio do {@code PaymentReceiptBuilder}.
  *
- * <p><strong>Estrutura e impacto:</strong> atua como DTO interno imutável entre a camada
- * de execução ({@code PaymentExecutionPipeline}) e a persistência ({@code PaymentTransaction}).
- * Normaliza escalas financeiras para 2 casas decimais ({@code HALF_EVEN}) e mantém cópia
- * imutável de {@code appliedDecorators} para rastreabilidade arquitetural.</p>
+ * Estrutura e impacto: atua como DTO interno imutável entre a camada de execução
+ * ({@code PaymentExecutionPipeline}) e a persistência ({@code PaymentTransaction}). Normaliza
+ * escalas financeiras para 2 casas decimais ({@code HALF_EVEN}) e mantém cópia imutável de
+ * {@code appliedDecorators} para rastreabilidade arquitetural.
  */
 public record PaymentExecutionResult(
         String transactionCode,
@@ -36,7 +36,7 @@ public record PaymentExecutionResult(
      * Valida invariantes obrigatórias e normaliza valores monetários e coleções defensivas.
      *
      * @throws NullPointerException quando {@code transactionCode}, {@code paymentMethod},
-     *                              {@code grossAmount}, {@code feeAmount} ou {@code status} forem nulos
+     *     {@code grossAmount}, {@code feeAmount} ou {@code status} forem nulos
      */
     public PaymentExecutionResult {
         Objects.requireNonNull(transactionCode, "transactionCode must not be null");

@@ -28,13 +28,13 @@ import java.util.Objects;
 /**
  * Entidade JPA central que representa uma transação persistida no Payment Hub.
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> agrega o estado financeiro,
- * a classificação de risco e a rastreabilidade dos padrões executados em uma única tabela
- * ({@code payment_transactions}). As restrições {@code unique} em {@code transaction_code}
- * e {@code idempotency_key} atuam como última linha de defesa contra duplicidade de
- * cobrança no banco, enquanto {@code precision = 19, scale = 2} previne perda de precisão
- * monetária. Fora os timestamps gerenciados por callbacks JPA, a única mutação permitida
- * após a criação ocorre via {@link #markAsRefunded(String)}.</p>
+ * Estrutura e ponto de maior impacto: agrega o estado financeiro, a classificação de risco e a
+ * rastreabilidade dos padrões executados em uma única tabela ({@code payment_transactions}). As
+ * restrições {@code unique} em {@code transaction_code} e {@code idempotency_key} atuam como última
+ * linha de defesa contra duplicidade de cobrança no banco, enquanto
+ * {@code precision = 19, scale = 2} previne perda de precisão monetária. Fora os timestamps
+ * gerenciados por callbacks JPA, a única mutação permitida após a criação ocorre via
+ * {@link #markAsRefunded(String)}.
  */
 @Entity
 @Table(name = "payment_transactions")
@@ -167,7 +167,7 @@ public class PaymentTransaction {
      * Constrói uma entidade persistível a partir de um resultado concluído pelo pipeline.
      *
      * @param context contexto da requisição de pagamento
-     * @param result  resultado consolidado pelo pipeline decorado
+     * @param result resultado consolidado pelo pipeline decorado
      * @return entidade pronta para persistência
      * @throws NullPointerException quando {@code context} ou {@code result} forem nulos
      */
@@ -192,10 +192,10 @@ public class PaymentTransaction {
     /**
      * Constrói uma entidade marcada como rejeitada durante a avaliação de compliance.
      *
-     * <p>Mantém valores financeiros zerados e {@code clearingChannel = "COMPLIANCE_GATE"},
-     * permitindo rastreamento de tentativas bloqueadas sem acionar o adaptador legado.</p>
+     * Mantém valores financeiros zerados e {@code clearingChannel = "COMPLIANCE_GATE"}, permitindo
+     * rastreamento de tentativas bloqueadas sem acionar o adaptador legado.
      *
-     * @param context        contexto da requisição de pagamento
+     * @param context contexto da requisição de pagamento
      * @param riskAssessment avaliação bloqueante emitida pela Chain of Responsibility
      * @return entidade com status {@link PaymentStatus#REJECTED}
      * @throws NullPointerException quando {@code context} ou {@code riskAssessment} forem nulos
@@ -220,8 +220,8 @@ public class PaymentTransaction {
     }
 
     /**
-     * Única transição de estado pós-persistência permitida na entidade: move a transação
-     * para {@link PaymentStatus#REFUNDED} após confirmação de estorno no canal legado.
+     * Única transição de estado pós-persistência permitida na entidade: move a transação para
+     * {@link PaymentStatus#REFUNDED} após confirmação de estorno no canal legado.
      *
      * @param reversalAuthCode código de autorização do estorno retornado pelo adaptador
      */

@@ -17,11 +17,11 @@ import java.util.Objects;
 /**
  * Registro append-only de auditoria persistido pelo {@code AuditLogObserver}.
  *
- * <p><strong>Estrutura e impacto:</strong> consolida uma trilha cronológica imutável de
- * cada transição relevante ({@code PAYMENT_PROCESSED}, {@code PAYMENT_REJECTED},
- * {@code PAYMENT_REFUNDED}) vinculada por {@code transactionCode}. Como a tabela
- * {@code payment_audit_logs} registra inclusive transações rejeitadas, sua persistência
- * depende da política {@code noRollbackFor = ComplianceViolationException.class} no Facade.</p>
+ * Estrutura e impacto: consolida uma trilha cronológica imutável de cada transição relevante
+ * ({@code PAYMENT_PROCESSED}, {@code PAYMENT_REJECTED}, {@code PAYMENT_REFUNDED}) vinculada por
+ * {@code transactionCode}. Como a tabela {@code payment_audit_logs} registra inclusive transações
+ * rejeitadas, sua persistência depende da política
+ * {@code noRollbackFor = ComplianceViolationException.class} no Facade.
  */
 @Entity
 @Table(name = "payment_audit_logs")
@@ -59,7 +59,7 @@ public class PaymentAuditLog {
      * Cria um registro de auditoria validando os campos obrigatórios de rastreabilidade.
      *
      * @throws NullPointerException quando {@code transactionCode}, {@code eventType},
-     *                              {@code status} ou {@code riskLevel} forem nulos
+     *     {@code status} ou {@code riskLevel} forem nulos
      */
     public PaymentAuditLog(
             String transactionCode,

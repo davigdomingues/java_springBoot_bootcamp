@@ -8,12 +8,12 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
- * Contexto imutável de entrada compartilhado entre os padrões Strategy,
- * Chain of Responsibility, Decorator e Adapter durante o processamento de um pagamento.
+ * Contexto imutável de entrada compartilhado entre os padrões Strategy, Chain of Responsibility,
+ * Decorator e Adapter durante o processamento de um pagamento.
  *
- * <p><strong>Ponto de maior impacto:</strong> garante integridade financeira e higiene de
- * domínio logo na fronteira de criação (fail-fast), impedindo propagação de valores nulos,
- * negativos ou escalas decimais inconsistentes através do pipeline.</p>
+ * Ponto de maior impacto: garante integridade financeira e higiene de domínio logo na fronteira de
+ * criação (fail-fast), impedindo propagação de valores nulos, negativos ou escalas decimais
+ * inconsistentes através do pipeline.
  */
 public record PaymentContext(
         String transactionCode,
@@ -28,15 +28,15 @@ public record PaymentContext(
         String description
 ) {
     /**
-     * Construtor compacto responsável por validar campos obrigatórios e normalizar
-     * valores financeiros (escala fixa de 2 casas com arredondamento bancário {@code HALF_EVEN})
-     * e defaults seguros de domínio.
+     * Construtor compacto responsável por validar campos obrigatórios e normalizar valores
+     * financeiros (escala fixa de 2 casas com arredondamento bancário {@code HALF_EVEN}) e defaults
+     * seguros de domínio.
      *
-     * @throws NullPointerException     quando campos obrigatórios ({@code transactionCode},
-     *                                  {@code payerDocument}, {@code payeeDocument}, {@code amount},
-     *                                  {@code paymentMethod}) forem nulos
+     * @throws NullPointerException quando campos obrigatórios ({@code transactionCode},
+     *     {@code payerDocument}, {@code payeeDocument}, {@code amount}, {@code paymentMethod})
+     *     forem nulos
      * @throws IllegalArgumentException quando strings obrigatórias estiverem em branco ou
-     *                                  {@code amount} for menor ou igual a zero
+     *     {@code amount} for menor ou igual a zero
      */
     public PaymentContext {
         transactionCode = requireNonBlank(transactionCode, "transactionCode");

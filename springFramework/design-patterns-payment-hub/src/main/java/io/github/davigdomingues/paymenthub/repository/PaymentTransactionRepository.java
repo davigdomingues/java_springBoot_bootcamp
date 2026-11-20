@@ -12,11 +12,11 @@ import java.util.Optional;
 /**
  * Repositório Spring Data JPA para consultas e persistência de {@link PaymentTransaction}.
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> além do CRUD padrão e listagens
- * ordenadas para a API REST, fornece duas consultas críticas para o comportamento do sistema:
- * {@link #findByIdempotencyKey(String)} (garantia de idempotência antes de acionar liquidação
- * ou consumir código do Singleton) e {@link #countByPayerDocumentAndCreatedAtAfter(String, Instant)}
- * (motor da janela deslizante no {@code VelocityRiskValidationHandler} da Chain of Responsibility).</p>
+ * Estrutura e ponto de maior impacto: além do CRUD padrão e listagens ordenadas para a API REST,
+ * fornece duas consultas críticas para o comportamento do sistema:
+ * {@link #findByIdempotencyKey(String)} (garantia de idempotência antes de acionar liquidação ou
+ * consumir código do Singleton) e {@link #countByPayerDocumentAndCreatedAtAfter(String, Instant)}
+ * (motor da janela deslizante no {@code VelocityRiskValidationHandler} da Chain of Responsibility).
  */
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
 

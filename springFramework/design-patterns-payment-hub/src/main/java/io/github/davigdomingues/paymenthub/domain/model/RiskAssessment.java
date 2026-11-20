@@ -7,13 +7,12 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Resultado imutável da avaliação de risco e compliance produzida pela
- * Chain of Responsibility.
+ * Resultado imutável da avaliação de risco e compliance produzida pela Chain of Responsibility.
  *
- * <p><strong>Estrutura e impacto:</strong> transporta estado acumulado puro entre os elos da
- * cadeia sem efeito colateral. O campo {@code approved} governa o curto-circuito do
- * {@code ComplianceValidationHandler} e a decisão do {@code PaymentOrchestrationFacade}
- * entre liquidar ou persistir como {@code REJECTED} e lançar {@code ComplianceViolationException}.</p>
+ * Estrutura e impacto: transporta estado acumulado puro entre os elos da cadeia sem efeito
+ * colateral. O campo {@code approved} governa o curto-circuito do
+ * {@code ComplianceValidationHandler} e a decisão do {@code PaymentOrchestrationFacade} entre
+ * liquidar ou persistir como {@code REJECTED} e lançar {@code ComplianceViolationException}.
  */
 public record RiskAssessment(
         int riskScore,
@@ -53,12 +52,12 @@ public record RiskAssessment(
     }
 
     /**
-     * Retorna uma nova avaliação acumulando pontos de risco e uma flag informativa,
-     * recalculando automaticamente a classificação de risco (limiares: &ge; 30 MEDIUM,
-     * &ge; 60 HIGH, teto 100). Se a avaliação já estiver bloqueada, preserva o bloqueio.
+     * Retorna uma nova avaliação acumulando pontos de risco e uma flag informativa, recalculando
+     * automaticamente a classificação de risco (limiares: &ge; 30 MEDIUM, &ge; 60 HIGH, teto 100).
+     * Se a avaliação já estiver bloqueada, preserva o bloqueio.
      *
      * @param points pontos positivos a adicionar ao score
-     * @param flag   identificador da ocorrência detectada
+     * @param flag identificador da ocorrência detectada
      * @return nova instância imutável de avaliação
      */
     public RiskAssessment withAddedRisk(int points, String flag) {
