@@ -17,21 +17,19 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Interceptador global ({@link RestControllerAdvice}) responsável por traduzir exceções
- * de validação, domínio, compliance e falhas internas em respostas {@link ApiErrorResponse}.
+ * Interceptador global ({@link RestControllerAdvice}) responsável por traduzir exceções de
+ * validação, domínio, compliance e falhas internas em respostas {@link ApiErrorResponse}.
  *
- * <p><strong>Matriz de mapeamento HTTP e impacto arquitetural:</strong></p>
- * <ul>
- *     <li>{@code 400 Bad Request}: {@link MethodArgumentNotValidException},
- *         {@link HttpMessageNotReadableException} e {@link MethodArgumentTypeMismatchException}
- *         (erros sintáticos ou de conversão antes da camada de negócio).</li>
- *     <li>{@code 404 Not Found}: {@link ResourceNotFoundException}.</li>
- *     <li>{@code 422 Unprocessable Entity}: {@link BusinessRuleException},
- *         {@link UnsupportedPaymentMethodException} e {@link ComplianceViolationException}
- *         (preservando a lista de violações no campo {@code details}).</li>
- *     <li>{@code 500 Internal Server Error}: fallback genérico para {@link Exception},
- *         registrando o stack trace completo apenas em log e devolvendo mensagem opaca.</li>
- * </ul>
+ * Matriz de mapeamento HTTP e impacto arquitetural:
+ * - {@code 400 Bad Request}: {@link MethodArgumentNotValidException},
+ *   {@link HttpMessageNotReadableException} e {@link MethodArgumentTypeMismatchException} (erros
+ *   sintáticos ou de conversão antes da camada de negócio).
+ * - {@code 404 Not Found}: {@link ResourceNotFoundException}.
+ * - {@code 422 Unprocessable Entity}: {@link BusinessRuleException},
+ *   {@link UnsupportedPaymentMethodException} e {@link ComplianceViolationException} (preservando a
+ *   lista de violações no campo {@code details}).
+ * - {@code 500 Internal Server Error}: fallback genérico para {@link Exception}, registrando o
+ *   stack trace completo apenas em log e devolvendo mensagem opaca.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -130,8 +128,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Fallback de segurança para exceções não previstas, evitando vazamento de stack trace
-     * ou detalhes internos de infraestrutura na resposta HTTP 500.
+     * Fallback de segurança para exceções não previstas, evitando vazamento de stack trace ou
+     * detalhes internos de infraestrutura na resposta HTTP 500.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
