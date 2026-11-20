@@ -10,15 +10,14 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * <strong>Padrão GoF: Observer (Subject / Event Publisher)</strong>
+ * Padrão GoF: Observer (Subject / Event Publisher)
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> mantém os observadores em
- * {@link CopyOnWriteArrayList} com registro idempotente ({@code addIfAbsent}), garantindo
- * iteração lock-free segura mesmo sob inscrições/remoções concorrentes em runtime.
- * O ponto crítico de resiliência reside em {@link #notifyObservers(PaymentProcessedEvent)}:
- * um bloco {@code try/catch (RuntimeException)} isola cada observador para que a falha
- * de um canal (ex.: disparo de notificação) nunca impeça a gravação da auditoria ou a
- * atualização de métricas, nem cause rollback inesperado no Facade.</p>
+ * Estrutura e ponto de maior impacto: mantém os observadores em {@link CopyOnWriteArrayList} com
+ * registro idempotente ({@code addIfAbsent}), garantindo iteração lock-free segura mesmo sob
+ * inscrições/remoções concorrentes em runtime. O ponto crítico de resiliência reside em
+ * {@link #notifyObservers(PaymentProcessedEvent)}: um bloco {@code try/catch (RuntimeException)}
+ * isola cada observador para que a falha de um canal (ex.: disparo de notificação) nunca impeça a
+ * gravação da auditoria ou a atualização de métricas, nem cause rollback inesperado no Facade.
  */
 @Component
 public class PaymentEventPublisher {

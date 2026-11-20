@@ -6,14 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
- * <strong>Padrão GoF: Adapter (Adaptee - Cliente de Mainframe Legado)</strong>
+ * Padrão GoF: Adapter (Adaptee - Cliente de Mainframe Legado)
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> simula um barramento bancário
- * legado com interface incompatível com o domínio moderno: opera exclusivamente por meio
- * de strings posicionais delimitadas por pipe ({@code |}) e quantias inteiras em centavos.
- * Devolve strings no padrão {@code OK|AUTH/REV-...|CANAL} ou {@code ERR|CODIGO|MENSAGEM},
- * exigindo tradução e proteção contra injeção de delimitadores pelo
- * {@link LegacyMainframeSettlementAdapter}.</p>
+ * Estrutura e ponto de maior impacto: simula um barramento bancário legado com interface
+ * incompatível com o domínio moderno: opera exclusivamente por meio de strings posicionais
+ * delimitadas por pipe ({@code |}) e quantias inteiras em centavos. Devolve strings no padrão
+ * {@code OK|AUTH/REV-...|CANAL} ou {@code ERR|CODIGO|MENSAGEM}, exigindo tradução e proteção contra
+ * injeção de delimitadores pelo {@link LegacyMainframeSettlementAdapter}.
  */
 @Component
 public class LegacyMainframeClient {
@@ -21,11 +20,9 @@ public class LegacyMainframeClient {
     /**
      * Envia um comando bruto no formato posicional legado e devolve a resposta bruta.
      *
-     * <p>Formatos aceitos:</p>
-     * <ul>
-     *     <li>{@code SETTLE|transactionCode|amountInCents|paymentMethod|payer|payee}</li>
-     *     <li>{@code REFUND|authorizationCode|amountInCents}</li>
-     * </ul>
+     * Formatos aceitos:
+     * - {@code SETTLE|transactionCode|amountInCents|paymentMethod|payer|payee}
+     * - {@code REFUND|authorizationCode|amountInCents}
      *
      * @param rawPipePayload payload delimitado por pipe
      * @return resposta no formato {@code OK|AUTH-...|CHANNEL} ou {@code ERR|CODE|MESSAGE}

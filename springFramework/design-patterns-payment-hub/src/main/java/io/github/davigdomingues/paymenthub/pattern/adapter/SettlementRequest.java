@@ -6,11 +6,12 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
- * Requisição moderna e tipada enviada à porta de liquidação externa ({@link ExternalSettlementPort}).
+ * Requisição moderna e tipada enviada à porta de liquidação externa
+ * ({@link ExternalSettlementPort}).
  *
- * <p><strong>Estrutura e impacto:</strong> atua como contrato de entrada da fronteira
- * anticorrupção do Adapter, assegurando que nenhum campo identificador ou monetário nulo
- * alcance o tradutor de protocolo legado.</p>
+ * Estrutura e impacto: atua como contrato de entrada da fronteira anticorrupção do Adapter,
+ * assegurando que nenhum campo identificador ou monetário nulo alcance o tradutor de protocolo
+ * legado.
  */
 public record SettlementRequest(
         String transactionCode,

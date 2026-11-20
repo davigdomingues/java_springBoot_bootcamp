@@ -13,15 +13,15 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * <strong>Padrão GoF: Observer (Concrete Observer - Coletor de Métricas)</strong>
+ * Padrão GoF: Observer (Concrete Observer - Coletor de Métricas)
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> consolida contadores operacionais
- * e acumuladores monetários ({@link BigDecimal}) em memória para leitura rápida via
- * {@code MetricsController}. A sincronização mútua ({@code synchronized}) entre
- * {@link #onPaymentEvent(PaymentProcessedEvent)}, {@link #getSummary()} e {@link #reset()}
- * garante snapshots consistentes entre contadores e volumes. Em eventos de estorno
- * ({@code PAYMENT_REFUNDED}), incrementa apenas {@code refundedCount} e {@code countByStatus}
- * sem recomputar {@code totalTransactions}, {@code countByMethod} nem volumes financeiros.</p>
+ * Estrutura e ponto de maior impacto: consolida contadores operacionais e acumuladores monetários
+ * ({@link BigDecimal}) em memória para leitura rápida via {@code MetricsController}. A
+ * sincronização mútua ({@code synchronized}) entre {@link #onPaymentEvent(PaymentProcessedEvent)},
+ * {@link #getSummary()} e {@link #reset()} garante snapshots consistentes entre contadores e
+ * volumes. Em eventos de estorno ({@code PAYMENT_REFUNDED}), incrementa apenas
+ * {@code refundedCount} e {@code countByStatus} sem recomputar {@code totalTransactions},
+ * {@code countByMethod} nem volumes financeiros.
  */
 @Component
 public class MetricsCollectorObserver implements PaymentEventObserver {

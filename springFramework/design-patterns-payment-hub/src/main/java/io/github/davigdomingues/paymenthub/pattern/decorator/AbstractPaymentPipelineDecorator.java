@@ -3,11 +3,11 @@ package io.github.davigdomingues.paymenthub.pattern.decorator;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Decorator (Base Decorator)</strong>
+ * Padrão GoF: Decorator (Base Decorator)
  *
- * <p><strong>Estrutura e impacto:</strong> encapsula a referência imutável ao próximo elo
- * da pilha ({@code delegate}), garantindo que cada decorator concreto delegue a execução
- * e apenas envolva/enriqueça o resultado sem quebrar o contrato de {@link PaymentExecutionPipeline}.</p>
+ * Estrutura e impacto: encapsula a referência imutável ao próximo elo da pilha ({@code delegate}),
+ * garantindo que cada decorator concreto delegue a execução e apenas envolva/enriqueça o resultado
+ * sem quebrar o contrato de {@link PaymentExecutionPipeline}.
  */
 public abstract class AbstractPaymentPipelineDecorator implements PaymentExecutionPipeline {
 

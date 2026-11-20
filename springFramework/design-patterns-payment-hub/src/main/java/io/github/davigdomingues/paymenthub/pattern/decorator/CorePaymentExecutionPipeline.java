@@ -3,6 +3,8 @@ package io.github.davigdomingues.paymenthub.pattern.decorator;
 import io.github.davigdomingues.paymenthub.domain.model.PaymentContext;
 import io.github.davigdomingues.paymenthub.domain.model.PaymentExecutionResult;
 import io.github.davigdomingues.paymenthub.domain.model.RiskAssessment;
+import io.github.davigdomingues.paymenthub.exception.BusinessRuleException;
+import io.github.davigdomingues.paymenthub.exception.UnsupportedPaymentMethodException;
 import io.github.davigdomingues.paymenthub.pattern.adapter.ExternalSettlementPort;
 import io.github.davigdomingues.paymenthub.pattern.adapter.SettlementRequest;
 import io.github.davigdomingues.paymenthub.pattern.adapter.SettlementResponse;
@@ -16,21 +18,14 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Decorator (Concrete Component)</strong>
+ * Padrão GoF: Decorator (Concrete Component)
  *
- * <p>
- * <strong>Estrutura e ponto de maior impacto:</strong> representa o núcleo
- * indivisível
- * de execução após aprovação na Chain of Responsibility. Integra quatro padrões
- * em sequência:
- * resolve a {@code PaymentStrategy} via Factory, calcula tarifa e valor líquido
- * ({@code HALF_EVEN}),
- * efetiva a liquidação no mainframe via {@link ExternalSettlementPort}
- * (Adapter) e constrói o
- * recibo base imutável via {@link PaymentReceiptBuilder}. Os decorators
- * externos enriquecem
- * esse recibo sem modificar esta classe.
- * </p>
+ * Estrutura e ponto de maior impacto: representa o núcleo indivisível de execução após aprovação na
+ * Chain of Responsibility. Integra quatro padrões em sequência: resolve a {@code PaymentStrategy}
+ * via Factory, calcula tarifa e valor líquido ({@code HALF_EVEN}), efetiva a liquidação no
+ * mainframe via {@link ExternalSettlementPort} (Adapter) e constrói o recibo base imutável via
+ * {@link PaymentReceiptBuilder}. Os decorators externos enriquecem esse recibo sem modificar esta
+ * classe.
  */
 @Component
 public class CorePaymentExecutionPipeline implements PaymentExecutionPipeline {
@@ -46,31 +41,11 @@ public class CorePaymentExecutionPipeline implements PaymentExecutionPipeline {
     }
 
     /**
-     * Executa tarifa, liquidação externa e montagem do recibo base com cashback
-     * inicial zerado.
+     * Executa tarifa, liquidação externa e montagem do recibo base com cashback inicial zerado.
      *
-     * @throws NullPointerException                                                            quando
-     *                                                                                         {@code context}
-     *                                                                                         ou
-     *                                                                                         {@code riskAssessment}
-     *                                                                                         forem
-     *                                                                                         nulos
-     * @throws io.github.davigdomingues.paymenthub.exception.UnsupportedPaymentMethodException
-     *                                                                                         se
-     *                                                                                         o
-     *                                                                                         método
-     *                                                                                         não
-     *                                                                                         possuir
-     *                                                                                         estratégia
-     *                                                                                         registrada
-     * @throws io.github.davigdomingues.paymenthub.exception.BusinessRuleException
-     *                                                                                         se
-     *                                                                                         a
-     *                                                                                         liquidação
-     *                                                                                         no
-     *                                                                                         adaptador
-     *                                                                                         legado
-     *                                                                                         falhar
+     * @throws NullPointerException quando {@code context} ou {@code riskAssessment} forem nulos
+     * @throws UnsupportedPaymentMethodException se o método não possuir estratégia registrada
+     * @throws BusinessRuleException se a liquidação no adaptador legado falhar
      */
     @Override
     public PaymentExecutionResult execute(PaymentContext context, RiskAssessment riskAssessment) {

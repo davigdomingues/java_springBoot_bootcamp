@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Observer (Concrete Observer - Despacho de Notificações)</strong>
+ * Padrão GoF: Observer (Concrete Observer - Despacho de Notificações)
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> roteia cada evento para dois canais
- * persistidos em {@code notification_logs} conforme o status resultante: em bloqueios de
- * compliance ({@link PaymentStatus#REJECTED}), além de avisar o pagador por {@code EMAIL},
- * aciona o canal crítico {@code FRAUD_ALERT_WEBHOOK} para a equipe de segurança; nos demais
- * desfechos ({@code APPROVED}, {@code PENDING_SETTLEMENT}, {@code REFUNDED}), dispara
- * {@code PUSH} ao pagador e {@code EMAIL} ao recebedor.</p>
+ * Estrutura e ponto de maior impacto: roteia cada evento para dois canais persistidos em
+ * {@code notification_logs} conforme o status resultante: em bloqueios de compliance
+ * ({@link PaymentStatus#REJECTED}), além de avisar o pagador por {@code EMAIL}, aciona o canal
+ * crítico {@code FRAUD_ALERT_WEBHOOK} para a equipe de segurança; nos demais desfechos
+ * ({@code APPROVED}, {@code PENDING_SETTLEMENT}, {@code REFUNDED}), dispara {@code PUSH} ao pagador
+ * e {@code EMAIL} ao recebedor.
  */
 @Component
 public class NotificationDispatchObserver implements PaymentEventObserver {

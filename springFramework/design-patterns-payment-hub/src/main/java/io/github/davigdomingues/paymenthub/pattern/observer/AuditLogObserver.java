@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Observer (Concrete Observer - Trilha de Auditoria)</strong>
+ * Padrão GoF: Observer (Concrete Observer - Trilha de Auditoria)
  *
- * <p><strong>Estrutura e impacto:</strong> reage a todos os eventos emitidos pelo
- * {@link PaymentEventPublisher} gravando um registro append-only em {@code payment_audit_logs}.
- * Sua atuação conjunta com {@code noRollbackFor = ComplianceViolationException.class} no
- * Facade assegura que até mesmo bloqueios de compliance fiquem auditáveis em banco.</p>
+ * Estrutura e impacto: reage a todos os eventos emitidos pelo {@link PaymentEventPublisher}
+ * gravando um registro append-only em {@code payment_audit_logs}. Sua atuação conjunta com
+ * {@code noRollbackFor = ComplianceViolationException.class} no Facade assegura que até mesmo
+ * bloqueios de compliance fiquem auditáveis em banco.
  */
 @Component
 public class AuditLogObserver implements PaymentEventObserver {

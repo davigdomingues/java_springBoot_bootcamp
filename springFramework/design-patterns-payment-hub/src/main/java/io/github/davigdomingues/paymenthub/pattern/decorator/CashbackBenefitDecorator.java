@@ -11,14 +11,14 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Decorator (Concrete Decorator - Benefício de Cashback)</strong>
+ * Padrão GoF: Decorator (Concrete Decorator - Benefício de Cashback)
  *
- * <p><strong>Estrutura e ponto de maior impacto:</strong> envolve o núcleo de execução para
- * calcular e conceder cashback sem acoplar regras promocionais à liquidação bancária.
- * Reconstrói o recibo imutável via {@link PaymentReceiptBuilder#from(PaymentExecutionResult)}
- * registrando seu nome em {@code appliedDecorators}. O método estático
- * {@link #calculateCashback(PaymentContext)} é reutilizado diretamente pelo
- * {@code simulatePayment} no Facade, eliminando qualquer divergência entre simulação e execução real.</p>
+ * Estrutura e ponto de maior impacto: envolve o núcleo de execução para calcular e conceder
+ * cashback sem acoplar regras promocionais à liquidação bancária. Reconstrói o recibo imutável via
+ * {@link PaymentReceiptBuilder#from(PaymentExecutionResult)} registrando seu nome em
+ * {@code appliedDecorators}. O método estático {@link #calculateCashback(PaymentContext)} é
+ * reutilizado diretamente pelo {@code simulatePayment} no Facade, eliminando qualquer divergência
+ * entre simulação e execução real.
  */
 public class CashbackBenefitDecorator extends AbstractPaymentPipelineDecorator {
 
@@ -49,9 +49,9 @@ public class CashbackBenefitDecorator extends AbstractPaymentPipelineDecorator {
     }
 
     /**
-     * Calcula o valor de cashback elegível de acordo com o nível do cliente,
-     * meio de pagamento e valor da operação (VIP: 2% teto R$ 100; PREMIUM: 1% teto R$ 50 para
-     * PIX ou valores &ge; R$ 200; STANDARD: R$ 0,00).
+     * Calcula o valor de cashback elegível de acordo com o nível do cliente, meio de pagamento e
+     * valor da operação (VIP: 2% teto R$ 100; PREMIUM: 1% teto R$ 50 para PIX ou valores &ge; R$
+     * 200; STANDARD: R$ 0,00).
      *
      * @param context contexto imutável do pagamento
      * @return valor de cashback arredondado com 2 casas decimais ({@code HALF_EVEN})
