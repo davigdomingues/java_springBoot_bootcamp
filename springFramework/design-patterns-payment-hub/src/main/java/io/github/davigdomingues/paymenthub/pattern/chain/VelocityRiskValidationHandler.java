@@ -9,24 +9,15 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Chain of Responsibility (Elo 3 - Controle de
- * Velocidade)</strong>
+ * Padrão GoF: Chain of Responsibility (Elo 3 - Controle de Velocidade)
  *
- * <p>
- * <strong>Estrutura e ponto de maior impacto:</strong> posicionado como último
- * elo da
- * cadeia por ser o único que executa leitura em banco
- * ({@link PaymentTransactionRepository}),
- * beneficiando-se do curto-circuito dos elos anteriores. Consulta a quantidade
- * de transações
- * do pagador na janela deslizante configurada (padrão 5 minutos): bloqueia em
- * {@code >= blockThreshold} ({@code VELOCITY_LIMIT_EXCEEDED}) e adiciona
- * {@code +30} pontos
- * ({@code ELEVATED_VELOCITY}) em {@code >= alertThreshold}, acumulando com
- * eventuais alertas
- * prévios (ex.: {@code HIGH_VALUE_TRANSACTION} + {@code ELEVATED_VELOCITY} = 65
- * → {@code HIGH}).
- * </p>
+ * Estrutura e ponto de maior impacto: posicionado como último elo da cadeia por ser o único que
+ * executa leitura em banco ({@link PaymentTransactionRepository}), beneficiando-se do
+ * curto-circuito dos elos anteriores. Consulta a quantidade de transações do pagador na janela
+ * deslizante configurada (padrão 5 minutos): bloqueia em {@code >= blockThreshold}
+ * ({@code VELOCITY_LIMIT_EXCEEDED}) e adiciona {@code +30} pontos ({@code ELEVATED_VELOCITY}) em
+ * {@code >= alertThreshold}, acumulando com eventuais alertas prévios (ex.:
+ * {@code HIGH_VALUE_TRANSACTION} + {@code ELEVATED_VELOCITY} = 65 -> {@code HIGH}).
  */
 public class VelocityRiskValidationHandler extends ComplianceValidationHandler {
 
@@ -70,8 +61,7 @@ public class VelocityRiskValidationHandler extends ComplianceValidationHandler {
                 windowStart);
 
         if (recentCount >= blockThreshold) {
-            // Preserva flags anteriores acumuladas (ex.: HIGH_VALUE_TRANSACTION) antes de
-            // bloquear
+            // Preserva flags anteriores acumuladas (ex.: HIGH_VALUE_TRANSACTION) antes de bloquear
             return current.block("VELOCITY_LIMIT_EXCEEDED");
         }
         if (recentCount >= alertThreshold) {

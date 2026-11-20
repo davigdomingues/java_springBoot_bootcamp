@@ -6,22 +6,13 @@ import io.github.davigdomingues.paymenthub.domain.model.RiskAssessment;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Chain of Responsibility (Handler Base + Template
- * Method)</strong>
+ * Padrão GoF: Chain of Responsibility (Handler Base + Template Method)
  *
- * <p>
- * <strong>Estrutura e ponto de maior impacto:</strong> define o esqueleto
- * imutável
- * ({@code final}) da cadeia de compliance e antifraude. Cada elo recebe o
- * {@link RiskAssessment}
- * acumulado, produz uma nova instância imutável via
- * {@link #evaluate(PaymentContext, RiskAssessment)}
- * e aplica <strong>curto-circuito imediato</strong> quando
- * {@code !updated.approved()},
- * evitando consultas custosas ao banco em elos posteriores (como controle de
- * velocidade)
- * após bloqueios determinísticos prévios.
- * </p>
+ * Estrutura e ponto de maior impacto: define o esqueleto imutável ({@code final}) da cadeia de
+ * compliance e antifraude. Cada elo recebe o {@link RiskAssessment} acumulado, produz uma nova
+ * instância imutável via {@link #evaluate(PaymentContext, RiskAssessment)} e aplica curto-circuito
+ * imediato quando {@code !updated.approved()}, evitando consultas custosas ao banco em elos
+ * posteriores (como controle de velocidade) após bloqueios determinísticos prévios.
  */
 public abstract class ComplianceValidationHandler {
 
@@ -32,7 +23,7 @@ public abstract class ComplianceValidationHandler {
      *
      * @param next próximo handler da cadeia
      * @return o próprio {@code next}, permitindo encadeamento fluente
-     *         {@code a.linkWith(b).linkWith(c)}
+     *     {@code a.linkWith(b).linkWith(c)}
      * @throws NullPointerException quando {@code next} for nulo
      */
     public ComplianceValidationHandler linkWith(ComplianceValidationHandler next) {
@@ -52,23 +43,20 @@ public abstract class ComplianceValidationHandler {
     }
 
     /**
-     * Template Method que executa este elo e propaga a avaliação acumulada para o
-     * próximo elo
+     * Template Method que executa este elo e propaga a avaliação acumulada para o próximo elo
      * somente enquanto a operação permanecer aprovada.
      *
      * @param context contexto imutável do pagamento
      * @param current avaliação acumulada pelos elos anteriores
      * @return avaliação atualizada
-     * @throws NullPointerException quando {@code context} ou {@code current} forem
-     *                              nulos
+     * @throws NullPointerException quando {@code context} ou {@code current} forem nulos
      */
     public final RiskAssessment validate(PaymentContext context, RiskAssessment current) {
         Objects.requireNonNull(context, "context must not be null");
         Objects.requireNonNull(current, "current RiskAssessment must not be null");
 
         RiskAssessment updated = evaluate(context, current);
-        // Curto-circuito impede chamadas subsequentes (inclusive I/O de banco) após
-        // primeiro bloqueio
+        // Curto-circuito impede chamadas subsequentes (inclusive I/O de banco) após primeiro bloqueio
         if (!updated.approved() || next == null) {
             return updated;
         }

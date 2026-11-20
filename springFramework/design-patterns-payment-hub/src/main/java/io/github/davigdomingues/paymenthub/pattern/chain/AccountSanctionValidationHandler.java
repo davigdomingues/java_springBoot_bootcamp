@@ -6,13 +6,13 @@ import io.github.davigdomingues.paymenthub.domain.model.RiskAssessment;
 import java.util.Set;
 
 /**
- * <strong>Padrão GoF: Chain of Responsibility (Elo 1 - Sanções e Autotransferência)</strong>
+ * Padrão GoF: Chain of Responsibility (Elo 1 - Sanções e Autotransferência)
  *
- * <p><strong>Estrutura e impacto:</strong> posicionado intencionalmente como primeiro elo
- * da cadeia ({@code PaymentPatternWiringConfig}) por ser puramente em memória e O(1).
- * Bloqueia imediatamente documentos sancionados (lista configurável via propriedades)
- * ou autotransferências ({@code payerDocument == payeeDocument}), acionando o curto-circuito
- * da cadeia antes das validações de limite e consulta de velocidade em banco.</p>
+ * Estrutura e impacto: posicionado intencionalmente como primeiro elo da cadeia
+ * ({@code PaymentPatternWiringConfig}) por ser puramente em memória e O(1). Bloqueia imediatamente
+ * documentos sancionados (lista configurável via propriedades) ou autotransferências
+ * ({@code payerDocument == payeeDocument}), acionando o curto-circuito da cadeia antes das
+ * validações de limite e consulta de velocidade em banco.
  */
 public class AccountSanctionValidationHandler extends ComplianceValidationHandler {
 

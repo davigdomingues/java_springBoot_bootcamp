@@ -8,13 +8,13 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
- * <strong>Padrão GoF: Chain of Responsibility (Elo 2 - Limites de Valor)</strong>
+ * Padrão GoF: Chain of Responsibility (Elo 2 - Limites de Valor)
  *
- * <p><strong>Estrutura e impacto:</strong> avalia limites monetários sem acesso a banco
- * antes do elo de velocidade: bloqueia valores acima do teto global (padrão R$ 100.000,00)
- * ou acima do teto específico de Boleto (padrão R$ 50.000,00), e adiciona {@code +35} pontos
- * de risco ({@code HIGH_VALUE_TRANSACTION}) para operações acima de R$ 20.000,00, permitindo
- * que a pontuação seja somada a outros sinais no elo seguinte.</p>
+ * Estrutura e impacto: avalia limites monetários sem acesso a banco antes do elo de velocidade:
+ * bloqueia valores acima do teto global (padrão R$ 100.000,00) ou acima do teto específico de
+ * Boleto (padrão R$ 50.000,00), e adiciona {@code +35} pontos de risco
+ * ({@code HIGH_VALUE_TRANSACTION}) para operações acima de R$ 20.000,00, permitindo que a pontuação
+ * seja somada a outros sinais no elo seguinte.
  */
 public class AmountLimitValidationHandler extends ComplianceValidationHandler {
 
