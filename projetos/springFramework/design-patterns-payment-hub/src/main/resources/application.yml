@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: design-patterns-payment-hub
+  datasource:
+    url: jdbc:h2:mem:paymenthubdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+payment-hub:
+  compliance:
+    sanctioned-documents:
+      - "00000000000"
+      - "99999999999"
+    max-global-amount: 100000.00
+    max-boleto-amount: 50000.00
+    high-value-threshold: 20000.00
+    velocity-window-minutes: 5
+    velocity-alert-threshold: 3
+    velocity-block-threshold: 5
