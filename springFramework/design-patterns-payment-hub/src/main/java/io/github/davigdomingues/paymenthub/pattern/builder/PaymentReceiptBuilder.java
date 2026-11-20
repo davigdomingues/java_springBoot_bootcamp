@@ -14,9 +14,11 @@ import java.util.Objects;
 /**
  * <strong>Padrão GoF: Builder</strong>
  *
- * <p>Fornece construção fluente e passo a passo do objeto imutável
- * {@link PaymentExecutionResult}, além de suportar cópia/enriquecimento
- * por meio de {@link #from(PaymentExecutionResult)} para uso nos Decorators.</p>
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> possui papel duplo na arquitetura:
+ * (1) construir o {@link PaymentExecutionResult} base no {@code CorePaymentExecutionPipeline}
+ * validando invariantes financeiras obrigatórias, e (2) possibilitar cópia/enriquecimento
+ * imutável via {@link #from(PaymentExecutionResult)} para que os Decorators acrescentem
+ * cashback, telemetria e trilha de decorators aplicados sem mutar o resultado original.</p>
  */
 public final class PaymentReceiptBuilder {
 
@@ -52,6 +54,7 @@ public final class PaymentReceiptBuilder {
      *
      * @param existing resultado base já construído
      * @return novo builder com os atributos copiados
+     * @throws NullPointerException quando {@code existing} for nulo
      */
     public static PaymentReceiptBuilder from(PaymentExecutionResult existing) {
         Objects.requireNonNull(existing, "existing result must not be null");
@@ -146,9 +149,12 @@ public final class PaymentReceiptBuilder {
     }
 
     /**
-     * Valida campos obrigatórios, normaliza escalas decimais e constrói o resultado imutável.
+     * Valida campos obrigatórios, normaliza escalas decimais ({@code HALF_EVEN}), deriva
+     * {@code netAmount = grossAmount - feeAmount} quando omitido e constrói o resultado imutável.
      *
      * @return {@link PaymentExecutionResult} validado e imutável
+     * @throws NullPointerException quando {@code transactionCode}, {@code paymentMethod},
+     *                              {@code grossAmount}, {@code feeAmount} ou {@code status} forem nulos
      */
     public PaymentExecutionResult build() {
         Objects.requireNonNull(transactionCode, "transactionCode is required");
@@ -161,6 +167,7 @@ public final class PaymentReceiptBuilder {
         BigDecimal normalizedFee = feeAmount.setScale(2, RoundingMode.HALF_EVEN);
         BigDecimal normalizedCashback = (cashbackAmount != null ? cashbackAmount : BigDecimal.ZERO)
                 .setScale(2, RoundingMode.HALF_EVEN);
+        // Cálculo automático de netAmount assegura coerência quando não sobrescrito explicitamente
         BigDecimal resolvedNet = (netAmount != null ? netAmount : normalizedGross.subtract(normalizedFee))
                 .setScale(2, RoundingMode.HALF_EVEN);
         RiskAssessment resolvedRisk = riskAssessment != null ? riskAssessment : RiskAssessment.clean();

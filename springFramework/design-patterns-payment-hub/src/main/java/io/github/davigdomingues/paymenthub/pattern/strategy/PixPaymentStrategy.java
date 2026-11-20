@@ -13,8 +13,16 @@ import java.math.RoundingMode;
 /**
  * <strong>Padrão GoF: Strategy (Implementação Concreta - PIX)</strong>
  *
- * <p>Processa transferências instantâneas via chave PIX, com isenção tarifária
- * para clientes VIP ou transações até R$ 5.000,00 e teto de R$ 25,00 acima desse limite.</p>
+ * <p>
+ * <strong>Estrutura e impacto:</strong> atende transferências instantâneas via
+ * SPI/Pix.
+ * Exige {@code pixKey} não vazia e pagamento à vista
+ * ({@code installments == 1}), aplica
+ * isenção tarifária para {@code VIP} ou valores até R$ 5.000,00 e cobra
+ * {@code 0,25%} com
+ * teto fixo de R$ 25,00 acima desse limite, liquidando imediatamente em
+ * {@code APPROVED}.
+ * </p>
  */
 @Component
 public class PixPaymentStrategy implements PaymentStrategy {
@@ -28,6 +36,13 @@ public class PixPaymentStrategy implements PaymentStrategy {
         return PaymentMethod.PIX;
     }
 
+    /**
+     * Valida presença de chave PIX e unicidade de parcela antes da etapa de
+     * compliance.
+     *
+     * @throws BusinessRuleException se {@code pixKey} estiver ausente/vazia ou
+     *                               {@code installments != 1}
+     */
     @Override
     public void validateSpecificRules(PaymentContext context) {
         if (context.pixKey() == null || context.pixKey().isBlank()) {
@@ -38,6 +53,10 @@ public class PixPaymentStrategy implements PaymentStrategy {
         }
     }
 
+    /**
+     * Aplica isenção para VIP/valores até R$ 5.000,00 ou 0,25% limitado a R$ 25,00
+     * via {@code HALF_EVEN}.
+     */
     @Override
     public BigDecimal calculateFee(PaymentContext context) {
         if (context.customerTier() == CustomerTier.VIP
@@ -47,6 +66,7 @@ public class PixPaymentStrategy implements PaymentStrategy {
         BigDecimal computed = context.amount()
                 .multiply(FEE_RATE)
                 .setScale(2, RoundingMode.HALF_EVEN);
+        // Teto tarifário impede cobrança excessiva em transferências PIX de alto valor
         return computed.min(FEE_CAP);
     }
 

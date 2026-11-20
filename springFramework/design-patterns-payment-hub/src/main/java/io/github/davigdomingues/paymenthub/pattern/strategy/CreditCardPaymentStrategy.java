@@ -10,10 +10,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * <strong>Padrão GoF: Strategy (Implementação Concreta - Cartão de Crédito)</strong>
+ * <strong>Padrão GoF: Strategy (Implementação Concreta - Cartão de
+ * Crédito)</strong>
  *
- * <p>Suporta parcelamento de 1 a 12 vezes com alíquota progressiva por parcela,
- * descontos por nível de relacionamento (PREMIUM/VIP) e piso mínimo de 0,99%.</p>
+ * <p>
+ * <strong>Estrutura e impacto:</strong> governa operações com parcelamento de 1
+ * a 12 vezes.
+ * Calcula a alíquota efetiva pela fórmula
+ * {@code max(0,99%, 2,49% + (parcelas - 1) * 0,50% - descontoTier)}
+ * com arredondamento bancário {@code HALF_EVEN}, garantindo piso mínimo de
+ * 0,99% mesmo com
+ * desconto VIP (1,00%) ou PREMIUM (0,50%), e liquida com status
+ * {@code APPROVED}.
+ * </p>
  */
 @Component
 public class CreditCardPaymentStrategy implements PaymentStrategy {
@@ -31,6 +40,13 @@ public class CreditCardPaymentStrategy implements PaymentStrategy {
         return PaymentMethod.CREDIT_CARD;
     }
 
+    /**
+     * Garante que o parcelamento esteja na faixa operacional permitida (1 a 12
+     * parcelas).
+     *
+     * @throws BusinessRuleException se {@code installments < 1} ou
+     *                               {@code installments > 12}
+     */
     @Override
     public void validateSpecificRules(PaymentContext context) {
         if (context.installments() < MIN_INSTALLMENTS || context.installments() > MAX_INSTALLMENTS) {
@@ -38,6 +54,10 @@ public class CreditCardPaymentStrategy implements PaymentStrategy {
         }
     }
 
+    /**
+     * Calcula a tarifa percentual progressiva por parcela descontando o benefício
+     * do tier até o piso de 0,99%.
+     */
     @Override
     public BigDecimal calculateFee(PaymentContext context) {
         BigDecimal installmentIncrement = INSTALLMENT_INCREMENT_RATE
@@ -48,6 +68,8 @@ public class CreditCardPaymentStrategy implements PaymentStrategy {
             case VIP -> VIP_DISCOUNT_RATE;
         };
 
+        // Piso tarifário protege margem mínima de adquirente independentemente de
+        // descontos
         BigDecimal effectiveRate = BASE_RATE
                 .add(installmentIncrement)
                 .subtract(tierDiscount)

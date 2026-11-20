@@ -10,10 +10,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * <strong>Padrão GoF: Strategy (Implementação Concreta - Boleto Bancário)</strong>
+ * <strong>Padrão GoF: Strategy (Implementação Concreta - Boleto
+ * Bancário)</strong>
  *
- * <p>Aplica tarifa fixa por nível do cliente, exige valor mínimo de R$ 10,00
- * à vista e inicia a transação aguardando compensação bancária.</p>
+ * <p>
+ * <strong>Estrutura e impacto:</strong> aplica tarifa fixa por tier do cliente
+ * (R$ 3,50 STANDARD, R$ 1,75 PREMIUM, R$ 0,00 VIP), exige emissão à vista e
+ * valor mínimo
+ * de R$ 10,00. Seu principal impacto no ciclo de vida é
+ * {@link #resolveInitialStatus()}
+ * retornar {@link PaymentStatus#PENDING_SETTLEMENT}, refletindo compensação
+ * bancária em
+ * até 2 dias úteis na CIP.
+ * </p>
  */
 @Component
 public class BoletoPaymentStrategy implements PaymentStrategy {
@@ -28,6 +37,13 @@ public class BoletoPaymentStrategy implements PaymentStrategy {
         return PaymentMethod.BOLETO;
     }
 
+    /**
+     * Valida emissão em parcela única e piso mínimo operacional de R$ 10,00 para
+     * boleto.
+     *
+     * @throws BusinessRuleException se {@code installments != 1} ou
+     *                               {@code amount < 10.00}
+     */
     @Override
     public void validateSpecificRules(PaymentContext context) {
         if (context.installments() != 1) {
@@ -38,6 +54,9 @@ public class BoletoPaymentStrategy implements PaymentStrategy {
         }
     }
 
+    /**
+     * Retorna a tarifa fixa correspondente ao nível de relacionamento do cliente.
+     */
     @Override
     public BigDecimal calculateFee(PaymentContext context) {
         return switch (context.customerTier()) {
@@ -47,6 +66,10 @@ public class BoletoPaymentStrategy implements PaymentStrategy {
         };
     }
 
+    /**
+     * Inicia boletos como {@link PaymentStatus#PENDING_SETTLEMENT} por dependerem
+     * de compensação CIP.
+     */
     @Override
     public PaymentStatus resolveInitialStatus() {
         return PaymentStatus.PENDING_SETTLEMENT;
