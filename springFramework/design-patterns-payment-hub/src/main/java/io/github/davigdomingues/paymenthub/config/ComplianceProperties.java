@@ -6,7 +6,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Propriedades externalizadas das regras de compliance e controle de velocidade.
+ * Propriedades externalizadas e imutáveis das regras de compliance e controle de velocidade.
+ *
+ * <p><strong>Estrutura e ponto de maior impacto:</strong> utiliza {@code @ConfigurationProperties}
+ * em um {@code record} Java no lugar de {@code @Value} para garantir binding seguro de listas
+ * YAML ({@code sanctioned-documents}) e validação defensiva centralizada no compact constructor,
+ * fornecendo fallbacks operacionais caso alguma chave seja omitida no {@code application.yml}.</p>
  */
 @ConfigurationProperties(prefix = "payment-hub.compliance")
 public record ComplianceProperties(
@@ -18,6 +23,9 @@ public record ComplianceProperties(
         Integer velocityAlertThreshold,
         Integer velocityBlockThreshold
 ) {
+    /**
+     * Normaliza limites e garante invariante {@code velocityBlockThreshold >= velocityAlertThreshold}.
+     */
     public ComplianceProperties {
         sanctionedDocuments = (sanctionedDocuments == null || sanctionedDocuments.isEmpty())
                 ? List.of("00000000000", "99999999999")
@@ -29,6 +37,7 @@ public record ComplianceProperties(
                 ? velocityWindowMinutes : 5L;
         velocityAlertThreshold = velocityAlertThreshold != null && velocityAlertThreshold > 0
                 ? velocityAlertThreshold : 3;
+        // Garante que o limiar de bloqueio nunca fique abaixo do limiar de alerta por erro de configuração
         velocityBlockThreshold = velocityBlockThreshold != null && velocityBlockThreshold >= velocityAlertThreshold
                 ? velocityBlockThreshold : Math.max(5, velocityAlertThreshold);
     }

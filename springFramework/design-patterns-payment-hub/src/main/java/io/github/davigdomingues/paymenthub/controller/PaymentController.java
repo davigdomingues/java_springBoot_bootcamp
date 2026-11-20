@@ -30,8 +30,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Controlador REST principal para processamento, simulação, consulta, estorno,
+ * Controlador REST fino para processamento, simulação, consulta, estorno,
  * auditoria e notificações de pagamentos.
+ *
+ * <p><strong>Estrutura e impacto:</strong> atua exclusivamente como adaptador HTTP na
+ * fronteira da aplicação, aplicando Bean Validation ({@code @Valid}) nos payloads de entrada
+ * e delegando toda regra de negócio ao {@link PaymentOrchestrationFacade}. Erros sintáticos
+ * são convertidos em HTTP {@code 400}, ausência de recursos em {@code 404} e violações de
+ * negócio/compliance em {@code 422} pelo {@code GlobalExceptionHandler}.</p>
  */
 @RestController
 @RequestMapping("/api/v1/payments")
@@ -40,6 +46,9 @@ public class PaymentController {
 
     private final PaymentOrchestrationFacade paymentFacade;
 
+    /**
+     * @throws NullPointerException quando {@code paymentFacade} for nulo
+     */
     public PaymentController(PaymentOrchestrationFacade paymentFacade) {
         this.paymentFacade = Objects.requireNonNull(paymentFacade, "paymentFacade must not be null");
     }

@@ -13,7 +13,12 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**
- * Payload de entrada validado via Bean Validation para processamento e simulação de pagamentos.
+ * Payload imutável de entrada para processamento e simulação de pagamentos.
+ *
+ * <p><strong>Fronteira de validação e impacto:</strong> aplica Bean Validation na borda
+ * HTTP ({@code @Valid}), convertendo erros sintáticos (formato de CPF/CNPJ, valor mínimo,
+ * faixa de parcelas) em HTTP {@code 400 Bad Request} via {@code GlobalExceptionHandler} antes
+ * de alcançar as regras semânticas de {@code PaymentStrategy} e compliance (HTTP {@code 422}).</p>
  */
 public record CreatePaymentRequest(
         @NotBlank(message = "payerDocument must not be blank")

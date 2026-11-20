@@ -40,9 +40,23 @@ import java.util.Optional;
 /**
  * <strong>Padrão GoF: Facade</strong>
  *
- * <p>Fornece uma interface unificada e de alto nível para os controladores REST,
- * encapsulando toda a orquestração entre Singleton, Factory, Strategy,
- * Chain of Responsibility, Adapter, Builder, Decorator e Observer.</p>
+ * <p>
+ * <strong>Estrutura e ponto de maior impacto:</strong> concentra a orquestração
+ * de
+ * ponta a ponta do Payment Hub atrás de um serviço coeso para os controladores
+ * REST,
+ * coordenando 8 padrões GoF (Singleton, Factory, Strategy, Chain of
+ * Responsibility,
+ * Adapter, Builder, Decorator e Observer). Seu aspecto arquitetural mais
+ * crítico é a
+ * política
+ * {@code @Transactional(noRollbackFor = ComplianceViolationException.class)} em
+ * {@link #processPayment(CreatePaymentRequest)}, combinada ao curto-circuito de
+ * idempotência
+ * antes da emissão de código no Singleton e à execução dry-run sem efeitos
+ * colaterais em
+ * {@link #simulatePayment(CreatePaymentRequest)}.
+ * </p>
  */
 @Service
 public class PaymentOrchestrationFacade {
@@ -61,6 +75,12 @@ public class PaymentOrchestrationFacade {
     private final PaymentAuditLogRepository auditLogRepository;
     private final NotificationLogRepository notificationLogRepository;
 
+    /**
+     * Injeta via construtor os coordenadores de padrões GoF e repositórios de
+     * persistência.
+     *
+     * @throws NullPointerException se qualquer colaborador obrigatório for nulo
+     */
     public PaymentOrchestrationFacade(
             PaymentStrategyFactory strategyFactory,
             ComplianceValidationHandler complianceChain,
@@ -69,35 +89,80 @@ public class PaymentOrchestrationFacade {
             PaymentEventPublisher eventPublisher,
             PaymentTransactionRepository transactionRepository,
             PaymentAuditLogRepository auditLogRepository,
-            NotificationLogRepository notificationLogRepository
-    ) {
+            NotificationLogRepository notificationLogRepository) {
         this.strategyFactory = Objects.requireNonNull(strategyFactory, "strategyFactory must not be null");
         this.complianceChain = Objects.requireNonNull(complianceChain, "complianceChain must not be null");
         this.executionPipeline = Objects.requireNonNull(executionPipeline, "executionPipeline must not be null");
         this.settlementPort = Objects.requireNonNull(settlementPort, "settlementPort must not be null");
         this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
-        this.transactionRepository = Objects.requireNonNull(transactionRepository, "transactionRepository must not be null");
+        this.transactionRepository = Objects.requireNonNull(transactionRepository,
+                "transactionRepository must not be null");
         this.auditLogRepository = Objects.requireNonNull(auditLogRepository, "auditLogRepository must not be null");
-        this.notificationLogRepository = Objects.requireNonNull(notificationLogRepository, "notificationLogRepository must not be null");
+        this.notificationLogRepository = Objects.requireNonNull(notificationLogRepository,
+                "notificationLogRepository must not be null");
     }
 
     /**
-     * Executa o fluxo completo de processamento de pagamento com suporte a idempotência,
-     * validação estratégica, compliance antifraude, liquidação, persistência e eventos.
+     * Orquestra o fluxo completo de processamento em 8 etapas:
+     * (1) checagem de idempotência; (2) geração atômica de código no Singleton;
+     * (3) resolução e validação específica na Factory/Strategy; (4) análise na
+     * Chain of Responsibility; (5) execução no pipeline decorado (Cashback +
+     * Telemetria +
+     * Core/Adapter/Builder); (6) persistência JPA; (7) disparo de eventos Observer;
+     * e (8) projeção para {@link PaymentResponse}.
      *
-     * <p>Quando o compliance bloqueia a operação, a transação rejeitada, sua auditoria e o
-     * alerta antifraude são intencionalmente mantidos em banco ({@code noRollbackFor}).</p>
+     * <p>
+     * <strong>Exceção crítica de transação:</strong>
+     * {@code noRollbackFor = ComplianceViolationException.class}
+     * impede que o proxy transacional do Spring reverta o commit quando o
+     * compliance bloqueia,
+     * preservando em H2 a transação {@code REJECTED}, sua auditoria e o
+     * {@code FRAUD_ALERT_WEBHOOK}.
+     * </p>
      *
-     * @param request dados da requisição de pagamento
-     * @return resumo completo da transação processada ou recuperada por idempotência
+     * @param request dados validados da requisição de pagamento
+     * @return resumo completo da transação processada ou recuperada por
+     *         idempotência
+     * @throws NullPointerException                                                            quando
+     *                                                                                         {@code request}
+     *                                                                                         for
+     *                                                                                         nulo
+     * @throws io.github.davigdomingues.paymenthub.exception.UnsupportedPaymentMethodException quando
+     *                                                                                         o
+     *                                                                                         método
+     *                                                                                         não
+     *                                                                                         possuir
+     *                                                                                         estratégia
+     * @throws BusinessRuleException                                                           quando
+     *                                                                                         regra
+     *                                                                                         da
+     *                                                                                         estratégia
+     *                                                                                         ou
+     *                                                                                         liquidação
+     *                                                                                         legada
+     *                                                                                         falhar
+     * @throws ComplianceViolationException                                                    quando
+     *                                                                                         bloqueado
+     *                                                                                         pela
+     *                                                                                         Chain
+     *                                                                                         of
+     *                                                                                         Responsibility
+     *                                                                                         (HTTP
+     *                                                                                         422
+     *                                                                                         com
+     *                                                                                         histórico
+     *                                                                                         preservado)
      */
     @Transactional(noRollbackFor = ComplianceViolationException.class)
     public PaymentResponse processPayment(CreatePaymentRequest request) {
         Objects.requireNonNull(request, "request must not be null");
 
+        // Curto-circuito de idempotência antes do Singleton evita desperdício de
+        // sequência e dupla cobrança
         String normalizedIdempotencyKey = normalizeBlankToNull(request.idempotencyKey());
         if (normalizedIdempotencyKey != null) {
-            Optional<PaymentTransaction> existing = transactionRepository.findByIdempotencyKey(normalizedIdempotencyKey);
+            Optional<PaymentTransaction> existing = transactionRepository
+                    .findByIdempotencyKey(normalizedIdempotencyKey);
             if (existing.isPresent()) {
                 return PaymentResponse.fromEntity(existing.get());
             }
@@ -111,44 +176,69 @@ public class PaymentOrchestrationFacade {
 
         RiskAssessment riskAssessment = complianceChain.validate(context);
         if (!riskAssessment.approved()) {
-            PaymentTransaction rejected = transactionRepository.save(PaymentTransaction.rejected(context, riskAssessment));
+            // Persiste REJECTED e emite eventos antes de lançar
+            // ComplianceViolationException (mantido por noRollbackFor)
+            PaymentTransaction rejected = transactionRepository
+                    .save(PaymentTransaction.rejected(context, riskAssessment));
             publishEvent(
                     rejected,
                     EVENT_PAYMENT_REJECTED,
-                    "Blocked by compliance rules: " + String.join(", ", riskAssessment.flags())
-            );
+                    "Blocked by compliance rules: " + String.join(", ", riskAssessment.flags()));
             throw new ComplianceViolationException(rejected.getTransactionCode(), riskAssessment.flags());
         }
 
         PaymentExecutionResult executionResult = executionPipeline.execute(context, riskAssessment);
         PaymentTransaction saved = transactionRepository.save(
-                PaymentTransaction.fromExecutionResult(context, executionResult)
-        );
+                PaymentTransaction.fromExecutionResult(context, executionResult));
 
         publishEvent(
                 saved,
                 EVENT_PAYMENT_PROCESSED,
-                "Settled via " + saved.getClearingChannel() + " auth=" + saved.getExternalAuthorizationCode()
-        );
+                "Settled via " + saved.getClearingChannel() + " auth=" + saved.getExternalAuthorizationCode());
 
         return PaymentResponse.fromEntity(saved);
     }
 
     /**
-     * Simula tarifas, cashback e análise de risco sem liquidar nem persistir registros.
+     * Executa simulação prévia (dry-run) em transação somente leitura
+     * ({@code readOnly = true}),
+     * calculando tarifas, cashback e avaliação de risco sem consumir sequência do
+     * Singleton,
+     * sem acionar o mainframe legado, sem persistir no H2 e sem notificar
+     * observadores.
      *
      * @param request dados da simulação
      * @return projeção financeira e de compliance
+     * @throws NullPointerException                                                            quando
+     *                                                                                         {@code request}
+     *                                                                                         for
+     *                                                                                         nulo
+     * @throws io.github.davigdomingues.paymenthub.exception.UnsupportedPaymentMethodException quando
+     *                                                                                         o
+     *                                                                                         método
+     *                                                                                         não
+     *                                                                                         possuir
+     *                                                                                         estratégia
+     * @throws BusinessRuleException                                                           quando
+     *                                                                                         regras
+     *                                                                                         da
+     *                                                                                         estratégia
+     *                                                                                         forem
+     *                                                                                         violadas
      */
     @Transactional(readOnly = true)
     public PaymentSimulationResponse simulatePayment(CreatePaymentRequest request) {
         Objects.requireNonNull(request, "request must not be null");
+        // Código sintético evita avançar o contador monotônico do Singleton em
+        // simulações
         PaymentContext context = buildContext(SIMULATION_CODE, null, request);
 
         PaymentStrategy strategy = strategyFactory.getStrategy(context.paymentMethod());
         strategy.validateSpecificRules(context);
 
         BigDecimal feeAmount = strategy.calculateFee(context).setScale(2, RoundingMode.HALF_EVEN);
+        // Reutiliza o cálculo estático do Decorator para manter paridade absoluta com a
+        // execução real
         BigDecimal estimatedCashback = CashbackBenefitDecorator.calculateCashback(context);
         BigDecimal netAmount = context.amount().subtract(feeAmount).setScale(2, RoundingMode.HALF_EVEN);
 
@@ -170,8 +260,7 @@ public class PaymentOrchestrationFacade {
                 riskAssessment.approved(),
                 riskAssessment.riskLevel(),
                 riskAssessment.riskScore(),
-                riskAssessment.flags()
-        );
+                riskAssessment.flags());
     }
 
     /**
@@ -179,6 +268,7 @@ public class PaymentOrchestrationFacade {
      *
      * @param transactionCode código da transação
      * @return detalhes completos da transação
+     * @throws ResourceNotFoundException quando o código não existir na base
      */
     @Transactional(readOnly = true)
     public PaymentResponse getByTransactionCode(String transactionCode) {
@@ -186,7 +276,8 @@ public class PaymentOrchestrationFacade {
     }
 
     /**
-     * Lista transações ordenadas da mais recente para a mais antiga, com filtros opcionais.
+     * Lista transações ordenadas da mais recente para a mais antiga, com filtros
+     * opcionais.
      *
      * @param paymentMethod filtro opcional por meio de pagamento
      * @param status        filtro opcional por status
@@ -196,7 +287,8 @@ public class PaymentOrchestrationFacade {
     public List<PaymentResponse> listPayments(PaymentMethod paymentMethod, PaymentStatus status) {
         List<PaymentTransaction> transactions;
         if (paymentMethod != null && status != null) {
-            transactions = transactionRepository.findByPaymentMethodAndStatusOrderByCreatedAtDesc(paymentMethod, status);
+            transactions = transactionRepository.findByPaymentMethodAndStatusOrderByCreatedAtDesc(paymentMethod,
+                    status);
         } else if (paymentMethod != null) {
             transactions = transactionRepository.findByPaymentMethodOrderByCreatedAtDesc(paymentMethod);
         } else if (status != null) {
@@ -208,10 +300,16 @@ public class PaymentOrchestrationFacade {
     }
 
     /**
-     * Solicita o estorno de uma transação elegível junto ao adaptador de liquidação legado.
+     * Solicita o estorno de uma transação elegível junto ao adaptador de liquidação
+     * legado.
      *
      * @param transactionCode código único da transação a estornar
      * @return transação atualizada com status {@link PaymentStatus#REFUNDED}
+     * @throws ResourceNotFoundException quando o código não existir na base
+     * @throws BusinessRuleException     quando o status atual não for
+     *                                   {@code APPROVED} nem
+     *                                   {@code PENDING_SETTLEMENT}, ou se o
+     *                                   mainframe recusar o estorno
      */
     @Transactional
     public PaymentResponse refundPayment(String transactionCode) {
@@ -221,14 +319,12 @@ public class PaymentOrchestrationFacade {
                 && transaction.getStatus() != PaymentStatus.PENDING_SETTLEMENT) {
             throw new BusinessRuleException(
                     "Only APPROVED or PENDING_SETTLEMENT transactions can be refunded. Current status: "
-                            + transaction.getStatus()
-            );
+                            + transaction.getStatus());
         }
 
         SettlementResponse refundResponse = settlementPort.refund(
                 transaction.getExternalAuthorizationCode(),
-                transaction.getGrossAmount()
-        );
+                transaction.getGrossAmount());
 
         transaction.markAsRefunded(refundResponse.authorizationCode());
         PaymentTransaction updated = transactionRepository.save(transaction);
@@ -236,8 +332,8 @@ public class PaymentOrchestrationFacade {
         publishEvent(
                 updated,
                 EVENT_PAYMENT_REFUNDED,
-                "Refunded via " + refundResponse.clearingChannel() + " reversalAuth=" + refundResponse.authorizationCode()
-        );
+                "Refunded via " + refundResponse.clearingChannel() + " reversalAuth="
+                        + refundResponse.authorizationCode());
 
         return PaymentResponse.fromEntity(updated);
     }
@@ -247,6 +343,7 @@ public class PaymentOrchestrationFacade {
      *
      * @param transactionCode código da transação
      * @return lista ordenada de eventos auditados
+     * @throws ResourceNotFoundException quando a transação não existir na base
      */
     @Transactional(readOnly = true)
     public List<AuditLogResponse> getAuditTrail(String transactionCode) {
@@ -262,6 +359,7 @@ public class PaymentOrchestrationFacade {
      *
      * @param transactionCode código da transação
      * @return lista ordenada de notificações disparadas
+     * @throws ResourceNotFoundException quando a transação não existir na base
      */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotifications(String transactionCode) {
@@ -275,8 +373,7 @@ public class PaymentOrchestrationFacade {
     private PaymentContext buildContext(
             String transactionCode,
             String idempotencyKey,
-            CreatePaymentRequest request
-    ) {
+            CreatePaymentRequest request) {
         return new PaymentContext(
                 transactionCode,
                 idempotencyKey,
@@ -287,15 +384,13 @@ public class PaymentOrchestrationFacade {
                 request.resolvedCustomerTier(),
                 request.resolvedInstallments(),
                 request.pixKey(),
-                request.description()
-        );
+                request.description());
     }
 
     private PaymentTransaction findTransactionOrThrow(String transactionCode) {
         return transactionRepository.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Payment transaction not found for code: " + transactionCode
-                ));
+                        "Payment transaction not found for code: " + transactionCode));
     }
 
     private void ensureTransactionExists(String transactionCode) {
@@ -315,8 +410,7 @@ public class PaymentOrchestrationFacade {
                 transaction.getPayeeDocument(),
                 transaction.getRiskLevel(),
                 Instant.now(),
-                details
-        );
+                details);
         eventPublisher.notifyObservers(event);
     }
 

@@ -7,7 +7,11 @@ import io.github.davigdomingues.paymenthub.domain.enums.RiskLevel;
 import java.time.Instant;
 
 /**
- * DTO de saída para eventos da trilha de auditoria de uma transação.
+ * DTO imutável de saída para eventos da trilha cronológica de auditoria de uma transação.
+ *
+ * <p><strong>Estrutura e impacto:</strong> projeta a entidade {@link PaymentAuditLog} para
+ * a borda REST desacoplando o modelo relacional JPA da serialização JSON do endpoint
+ * {@code GET /api/v1/payments/{transactionCode}/audit}.</p>
  */
 public record AuditLogResponse(
         Long id,

@@ -18,14 +18,28 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Configuração central responsável pela montagem explícita das cadeias de
+ * Configuração central responsável pelo wiring explícito da
  * <strong>Chain of Responsibility</strong> (compliance) e da pilha de
  * <strong>Decorators</strong> do pipeline de execução.
+ *
+ * <p><strong>Pontos de maior impacto arquitetural:</strong></p>
+ * <ul>
+ *     <li><strong>Ordem da Chain:</strong> encadeia validadores em memória O(1) primeiro
+ *         ({@code Sanction} → {@code AmountLimit}) e consulta em banco por último
+ *         ({@code VelocityRisk}), maximizando o ganho do curto-circuito.</li>
+ *     <li><strong>Desambiguação por {@code @Primary}:</strong> como {@link CorePaymentExecutionPipeline}
+ *         também é um bean {@code @Component} do tipo {@link PaymentExecutionPipeline}, a anotação
+ *         {@code @Primary} garante que o {@code PaymentOrchestrationFacade} receba sempre a
+ *         pilha decorada completa ({@code Telemetry → Cashback → Core}) sem exigir {@code @Qualifier}.</li>
+ * </ul>
  */
 @Configuration
 @EnableConfigurationProperties(ComplianceProperties.class)
 public class PaymentPatternWiringConfig {
 
+    /**
+     * Monta e expõe o elo inicial da cadeia de compliance configurada por propriedades.
+     */
     @Bean
     public ComplianceValidationHandler complianceValidationChain(
             PaymentTransactionRepository transactionRepository,
@@ -49,13 +63,18 @@ public class PaymentPatternWiringConfig {
                 properties.velocityBlockThreshold()
         );
 
+        // Ordem intencional: verificações determinísticas em memória antecedem consulta SQL de velocidade
         sanctionHandler.linkWith(amountHandler).linkWith(velocityHandler);
         return sanctionHandler;
     }
 
+    /**
+     * Compõe a pilha de execução envolvendo o núcleo com cashback e telemetria de latência.
+     */
     @Bean
     @Primary
     public PaymentExecutionPipeline paymentExecutionPipeline(CorePaymentExecutionPipeline corePipeline) {
+        // ExecutionTelemetryDecorator envolve CashbackBenefitDecorator para medir o pipeline completo
         PaymentExecutionPipeline withCashback = new CashbackBenefitDecorator(corePipeline);
         return new ExecutionTelemetryDecorator(withCashback);
     }

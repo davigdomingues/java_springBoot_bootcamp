@@ -4,7 +4,11 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Payload padronizado de erro retornado pelos handlers globais da API REST.
+ * Payload padronizado de erro retornado pelos handlers do {@code GlobalExceptionHandler}.
+ *
+ * <p><strong>Estrutura e impacto:</strong> unifica a resposta de falhas {@code 400}, {@code 404},
+ * {@code 422} e {@code 500} sem expor detalhes internos da JVM. Realiza cópia defensiva de
+ * {@code details} para transportar campos inválidos (HTTP 400) ou flags de compliance (HTTP 422).</p>
  */
 public record ApiErrorResponse(
         Instant timestamp,

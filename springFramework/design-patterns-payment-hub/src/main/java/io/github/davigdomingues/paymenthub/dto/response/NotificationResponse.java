@@ -5,7 +5,11 @@ import io.github.davigdomingues.paymenthub.domain.entity.NotificationLog;
 import java.time.Instant;
 
 /**
- * DTO de saída para registros de notificações emitidas pelos observadores.
+ * DTO imutável de saída para registros de notificações emitidas pelos observadores.
+ *
+ * <p><strong>Estrutura e impacto:</strong> isola a entidade JPA {@link NotificationLog} na
+ * consulta de {@code GET /api/v1/payments/{transactionCode}/notifications}, expondo canais
+ * ({@code PUSH}, {@code EMAIL}, {@code FRAUD_ALERT_WEBHOOK}) sem vazar metadados de persistência.</p>
  */
 public record NotificationResponse(
         Long id,

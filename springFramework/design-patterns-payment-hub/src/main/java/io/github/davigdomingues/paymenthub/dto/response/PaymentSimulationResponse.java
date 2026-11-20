@@ -11,6 +11,11 @@ import java.util.List;
 /**
  * Resposta da simulação prévia (dry-run) exibindo tarifas, cashback estimado,
  * janela de liquidação e análise de compliance sem persistir no banco.
+ *
+ * <p><strong>Estrutura e impacto:</strong> utiliza as mesmas regras de {@code PaymentStrategy},
+ * {@code CashbackBenefitDecorator} e {@code ComplianceValidationHandler} do fluxo real para
+ * antecipar ao cliente o {@code projectedStatus} (inclusive possível {@code REJECTED}) sem
+ * acionar mainframe, Singleton ou observadores.</p>
  */
 public record PaymentSimulationResponse(
         PaymentMethod paymentMethod,
